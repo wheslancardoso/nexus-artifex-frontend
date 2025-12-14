@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nexus Artifex - Oceano de Ideias</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f9f506",
+                        "accent-blue": "#0ea5e9",
+                        "ocean-light": "#e0f2fe",
+                        "ocean-medium": "#bae6fd",
+                        "background-light": "#f0f9ff", 
+                        "background-dark": "#0c4a6e",
+                        "glass-border": "rgba(255, 255, 255, 0.4)",
+                        "glass-surface": "rgba(255, 255, 255, 0.25)",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"],
+                        "sans": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem", 
+                        "lg": "1.5rem", 
+                        "xl": "2.5rem", 
+                        "2xl": "3rem",
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+                        'glow': '0 0 20px rgba(249, 245, 6, 0.5)',
+                        'inner-light': 'inset 0 2px 4px 0 rgba(255, 255, 255, 0.6)'
+                    },
+                    backgroundImage: {
+                        'ocean-gradient': 'linear-gradient(180deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%)',
+                        'glass-gradient': 'linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.1) 100%)',
+                        'gloss-overlay': 'linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0) 100%)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>.glass-panel {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+        }
+        .glossy-button {
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .glossy-button::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+            border-radius: 9999px 9999px 0 0;
+            pointer-events: none;
+        }
+        .ocean-bg {
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(14, 165, 233, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(249, 245, 6, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.1) 0px, transparent 50%),
+                linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
+            background-attachment: fixed;
+        }
+        .mesh-gradient {
+            background-color: #f9f506;
+            background-image: radial-gradient(at 89% 19%, hsla(196,87%,82%,1) 0px, transparent 50%),
+            radial-gradient(at 4% 9%, hsla(196,87%,82%,1) 0px, transparent 50%),
+            radial-gradient(at 97% 93%, hsla(196,87%,82%,1) 0px, transparent 50%),
+            radial-gradient(at 3% 92%, hsla(196,87%,82%,1) 0px, transparent 50%),
+            radial-gradient(at 48% 50%, hsla(196,87%,82%,1) 0px, transparent 50%),
+            radial-gradient(at 80% 50%, hsla(64,96%,50%,0.2) 0px, transparent 50%);
+        }
+        .text-shadow-sm {
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="font-display text-[#0f172a] ocean-bg overflow-x-hidden min-h-screen flex flex-col">
+<nav class="fixed top-4 left-0 right-0 z-50 flex justify-center px-4">
+<div class="glass-panel rounded-full px-6 py-3 flex items-center justify-between w-full max-w-[1000px] shadow-glass">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-orange-300 flex items-center justify-center shadow-inner-light">
+<span class="material-symbols-outlined text-[#0f172a] text-[20px]">waves</span>
+</div>
+<h1 class="font-bold text-lg tracking-tight text-[#0f172a]">Nexus Artifex</h1>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-sm font-medium text-[#334155] hover:text-[#0ea5e9] transition-colors" href="#problema">Problema</a>
+<a class="text-sm font-medium text-[#334155] hover:text-[#0ea5e9] transition-colors" href="#solucao">Solução</a>
+<a class="text-sm font-medium text-[#334155] hover:text-[#0ea5e9] transition-colors" href="#fluxo">Fluxo</a>
+</div>
+<div class="flex items-center gap-3">
+<button class="hidden sm:flex text-sm font-bold text-[#334155] hover:text-[#0f172a] px-3 py-2 transition-colors">
+                    Entrar
+                </button>
+<button class="glossy-button bg-sky-300/90 text-[#0f172a] text-sm font-bold px-5 py-2.5 rounded-full hover:shadow-[0_0_20px_rgba(125,211,252,0.6)] transition-all transform hover:-translate-y-0.5 active:translate-y-0">
+                    Começar
+                </button>
+</div>
+</div>
+</nav>
+<section class="relative min-h-screen flex items-center justify-center pt-24 pb-20 px-6 overflow-hidden">
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-blue-200 to-cyan-200 rounded-full blur-[100px] opacity-40 animate-pulse"></div>
+<div class="absolute top-20 right-20 w-64 h-64 bg-primary/20 rounded-full blur-[80px]"></div>
+<div class="relative z-10 max-w-4xl w-full flex flex-col items-center text-center gap-8">
+<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/40 border border-white/50 backdrop-blur-md shadow-sm mb-4">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="text-xs font-bold uppercase tracking-wider text-[#0f172a]/70">Inteligência Criativa Viva</span>
+</div>
+<h1 class="text-5xl md:text-7xl font-bold tracking-tight text-[#0f172a] leading-[1.1] drop-shadow-sm">
+                Mergulhe no <br/>
+<span class="text-transparent bg-clip-text bg-gradient-to-r from-[#0ea5e9] to-[#0284c7]">Oceano de Ideias</span>
+</h1>
+<p class="text-lg md:text-xl text-[#334155] max-w-2xl font-medium leading-relaxed">
+                Nexus Artifex: Onde a inteligência criativa flui, conecta e evolui em um ecossistema vivo. Descubra conexões invisíveis em suas ideias.
+            </p>
+<div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mt-4">
+<button class="glossy-button bg-sky-300/90 text-[#0f172a] h-14 px-8 rounded-full font-bold text-lg shadow-lg hover:shadow-[0_0_20px_rgba(125,211,252,0.6)] transition-all transform hover:-translate-y-1 min-w-[200px] flex items-center justify-center gap-2 group">
+                    Explorar o Nexus
+                    <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+<button class="glass-panel bg-sky-200/20 hover:bg-sky-200/40 text-[#0f172a] h-14 px-8 rounded-full font-bold text-lg shadow-lg transition-all transform hover:-translate-y-1 min-w-[200px] flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">play_circle</span>
+                    Ver Demonstração
+                </button>
+</div>
+<div class="mt-16 w-full max-w-5xl relative group">
+<div class="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-blue-400 rounded-[2.5rem] blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
+<div class="glass-panel rounded-[2rem] p-4 relative overflow-hidden aspect-[16/9] md:aspect-[21/9]">
+<img alt="Abstract fluid blue waves" class="w-full h-full object-cover rounded-[1.5rem] opacity-90 mix-blend-overlay hover:scale-105 transition-transform duration-700 ease-in-out" data-alt="Abstract fluid blue waves representing creative flow" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOHzGIrH2H6qsQdfzjYoSikT1u7rMR9j4jCmtLZ7NGK80oS_k6t6iwDRcRykSsdhzMv5HSbpxc_OqOxGA-DG-EoMDZfL1XYjLvvgwDsuZNiIs2sGfIzGkWWbySyKfr8EZNfuSLUGKGsBuEr5rYWazAKFQAVQHeOnXHK7bRBG-usm6_trtxJjZxG7DZXJFPluW592SHQ9Cws3zuNwKdx95gdloMduR7CMZgw1Z1YYTDdBIrdAjy0orVo8G8xP-7xbtsBB5EXIUiG48"/>
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<div class="glass-panel px-6 py-4 rounded-xl flex items-center gap-3 animate-bounce shadow-xl" style="animation-duration: 3s;">
+<span class="material-symbols-outlined text-primary">auto_awesome</span>
+<span class="font-bold text-[#0f172a]">Sua ideia conectada</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="py-24 px-6 relative" id="problema">
+<div class="max-w-6xl mx-auto">
+<div class="mb-16 text-center">
+<h2 class="text-3xl md:text-4xl font-bold text-[#0f172a] mb-4">Fragmentação Criativa</h2>
+<p class="text-lg text-[#334155] max-w-2xl mx-auto">Em um mar de ferramentas desconectadas, suas melhores ideias acabam se perdendo como ilhas isoladas.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="glass-panel p-8 rounded-[2rem] hover:bg-white/40 transition-colors duration-300 group">
+<div class="w-14 h-14 rounded-2xl bg-white/60 flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl text-cyan-600">travel_explore</span>
+</div>
+<h3 class="text-xl font-bold text-[#0f172a] mb-3">Ilhas Isoladas</h3>
+<p class="text-[#475569] leading-relaxed">Ferramentas que não conversam criam silos de pensamento, impedindo a sinergia natural.</p>
+</div>
+<div class="glass-panel p-8 rounded-[2rem] hover:bg-white/40 transition-colors duration-300 group">
+<div class="w-14 h-14 rounded-2xl bg-white/60 flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl text-cyan-600">cloud_off</span>
+</div>
+<h3 class="text-xl font-bold text-[#0f172a] mb-3">Perda de Contexto</h3>
+<p class="text-[#475569] leading-relaxed">A falta de conexão dilui o impacto das suas inovações e torna difícil recuperar a origem das ideias.</p>
+</div>
+<div class="glass-panel p-8 rounded-[2rem] hover:bg-white/40 transition-colors duration-300 group">
+<div class="w-14 h-14 rounded-2xl bg-white/60 flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl text-cyan-600">hourglass_disabled</span>
+</div>
+<h3 class="text-xl font-bold text-[#0f172a] mb-3">Ideias Estagnadas</h3>
+<p class="text-[#475569] leading-relaxed">Sem fluxo contínuo, a evolução criativa é interrompida antes mesmo de amadurecer.</p>
+</div>
+</div>
+</div>
+</section>
+<section class="py-24 px-6 relative bg-gradient-to-b from-transparent to-white/40" id="solucao">
+<div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12 md:gap-20">
+<div class="flex-1 space-y-8">
+<div class="inline-block px-3 py-1 rounded-full bg-cyan-100 text-cyan-800 text-xs font-bold uppercase tracking-wide">Ecossistema Unificado</div>
+<h2 class="text-4xl md:text-5xl font-bold text-[#0f172a] leading-tight">
+                    Conecte pensamentos como um <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-600">grafo vivo</span>.
+                </h2>
+<p class="text-lg text-[#334155] leading-relaxed">
+                    Nossa interface de vidro líquido permite visualizar conexões invisíveis. Cada ideia é um nó que respira, cresce e se conecta automaticamente com conceitos relacionados.
+                </p>
+<ul class="space-y-4">
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary bg-black/5 rounded-full p-1 text-sm">check</span>
+<span class="text-[#475569] font-medium">Visualização espacial de dados</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary bg-black/5 rounded-full p-1 text-sm">check</span>
+<span class="text-[#475569] font-medium">Sugestões de conexão por IA</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary bg-black/5 rounded-full p-1 text-sm">check</span>
+<span class="text-[#475569] font-medium">Interface fluida e sem atrito</span>
+</li>
+</ul>
+<button class="mt-4 text-[#0ea5e9] font-bold flex items-center gap-2 hover:gap-3 transition-all">
+                    Saiba como funciona a tecnologia
+                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<div class="flex-1 w-full">
+<div class="relative w-full aspect-square max-w-[500px] mx-auto">
+<div class="absolute inset-0 bg-gradient-to-tr from-cyan-300 to-primary opacity-20 blur-[60px] rounded-full animate-pulse"></div>
+<div class="glass-panel w-full h-full rounded-[2.5rem] relative flex items-center justify-center overflow-hidden shadow-2xl border border-white/60">
+<img alt="3D Network Graph" class="absolute inset-0 w-full h-full object-cover mix-blend-multiply opacity-60" data-alt="Abstract 3D network graph with glowing nodes and connections" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhKNqHfT9sY0hNjvVZpY8xo15CBg13KLODJ_JA5jAyb7aDGdluYzKfJgi-tOzZJKsoF55Nf8VajqgVt0DY4UDx7-gt5gAYmNiDrlA16ci0RFE4FNp2REQEEXbaQ4baNLPAGG2qhheX2LGyiekbHuHIMtaL81gKlZKnVm0_mLDg98zmaK5x-qgE6uc1Zk1ENG3-9WcZqZijc3Ur2zX5TLCfvOjmCRIaBV1aF6YQP9yzfIlcCXW5ArJcL3lOtXvQPcPCPuPBAZ5ysN8"/>
+<div class="absolute top-[20%] left-[10%] glass-panel p-3 rounded-xl animate-bounce shadow-lg" style="animation-delay: 0s; animation-duration: 4s;">
+<span class="material-symbols-outlined text-cyan-700">lightbulb</span>
+</div>
+<div class="absolute bottom-[25%] right-[15%] glass-panel p-3 rounded-xl animate-bounce shadow-lg" style="animation-delay: 1s; animation-duration: 5s;">
+<span class="material-symbols-outlined text-primary">hub</span>
+</div>
+<div class="absolute top-[50%] right-[40%] bg-primary/90 p-4 rounded-2xl animate-pulse shadow-glow z-10">
+<span class="material-symbols-outlined text-[#0f172a]">auto_graph</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="py-24 px-6 relative overflow-hidden" id="fluxo">
+<div class="absolute top-1/2 left-0 w-full -translate-y-1/2 opacity-30 pointer-events-none">
+<svg class="w-full h-auto text-cyan-200 fill-current" viewBox="0 0 1440 320">
+<path d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z" fill-opacity="1"></path>
+</svg>
+</div>
+<div class="max-w-6xl mx-auto relative z-10">
+<h2 class="text-3xl md:text-4xl font-bold text-center text-[#0f172a] mb-16">Seu Fluxo Criativo</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+<div class="flex flex-col items-center text-center group">
+<div class="w-20 h-20 rounded-full bg-white shadow-lg flex items-center justify-center mb-6 z-10 relative group-hover:-translate-y-2 transition-transform duration-300">
+<div class="absolute inset-0 bg-cyan-100 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300"></div>
+<span class="material-symbols-outlined text-3xl text-cyan-600 relative z-10">neurology</span>
+</div>
+<h3 class="text-xl font-bold text-[#0f172a] mb-2">Ideação</h3>
+<p class="text-sm text-[#475569]">Onde tudo começa. Capture o pensamento bruto.</p>
+</div>
+<div class="flex flex-col items-center text-center group">
+<div class="w-20 h-20 rounded-full bg-white shadow-lg flex items-center justify-center mb-6 z-10 relative group-hover:-translate-y-2 transition-transform duration-300">
+<div class="absolute inset-0 bg-cyan-100 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300"></div>
+<span class="material-symbols-outlined text-3xl text-cyan-600 relative z-10">water_drop</span>
+</div>
+<h3 class="text-xl font-bold text-[#0f172a] mb-2">Evolução</h3>
+<p class="text-sm text-[#475569]">Nutra suas ideias e veja-as ganhar forma.</p>
+</div>
+<div class="flex flex-col items-center text-center group">
+<div class="w-20 h-20 rounded-full bg-white shadow-lg flex items-center justify-center mb-6 z-10 relative group-hover:-translate-y-2 transition-transform duration-300">
+<div class="absolute inset-0 bg-cyan-100 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300"></div>
+<span class="material-symbols-outlined text-3xl text-cyan-600 relative z-10">share_reviews</span>
+</div>
+<h3 class="text-xl font-bold text-[#0f172a] mb-2">Conexão</h3>
+<p class="text-sm text-[#475569]">O sistema encontra padrões e une conceitos.</p>
+</div>
+<div class="flex flex-col items-center text-center group">
+<div class="w-20 h-20 rounded-full bg-white shadow-lg flex items-center justify-center mb-6 z-10 relative group-hover:-translate-y-2 transition-transform duration-300">
+<div class="absolute inset-0 bg-primary/50 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300"></div>
+<span class="material-symbols-outlined text-3xl text-[#0f172a] relative z-10">rocket_launch</span>
+</div>
+<h3 class="text-xl font-bold text-[#0f172a] mb-2">Exploração</h3>
+<p class="text-sm text-[#475569]">Navegue pelo seu novo universo de conhecimento.</p>
+</div>
+</div>
+</div>
+</section>
+<section class="py-20 px-6">
+<div class="max-w-4xl mx-auto glass-panel p-10 rounded-[2.5rem] text-center shadow-xl border border-white/70 relative overflow-hidden">
+<div class="absolute -top-20 -right-20 w-64 h-64 bg-primary/10 rounded-full blur-[60px]"></div>
+<div class="absolute -bottom-20 -left-20 w-64 h-64 bg-cyan-400/10 rounded-full blur-[60px]"></div>
+<span class="material-symbols-outlined text-4xl text-cyan-600 mb-6">memory</span>
+<h2 class="text-3xl font-bold text-[#0f172a] mb-4">Tecnologia Invisível</h2>
+<p class="text-lg text-[#334155] mb-0 leading-relaxed max-w-2xl mx-auto">
+                Por trás da interface cristalina, algoritmos avançados trabalham silenciosamente. Não é apenas organização, é <span class="font-bold text-[#0f172a]">ressonância cognitiva</span>. Nossa IA aprende como você pensa e adapta o fluxo para maximizar sua criatividade, sem nunca atrapalhar sua visão.
+            </p>
+</div>
+</section>
+<section class="py-32 px-6 text-center relative">
+<div class="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent z-0"></div>
+<div class="relative z-10 max-w-3xl mx-auto">
+<h2 class="text-5xl md:text-6xl font-bold text-[#0f172a] mb-8 tracking-tight">Pronto para mergulhar?</h2>
+<p class="text-xl text-[#475569] mb-10">Junte-se a milhares de mentes criativas que já encontraram seu fluxo no Nexus.</p>
+<div class="flex flex-col items-center gap-4">
+<button class="glossy-button bg-sky-300/90 text-[#0f172a] text-xl font-bold px-10 py-5 rounded-full shadow-xl hover:shadow-[0_0_20px_rgba(125,211,252,0.6)] hover:scale-105 transition-all w-full md:w-auto">
+                    Começar Gratuitamente
+                </button>
+<p class="text-sm text-[#64748b] mt-2">Sem cartão de crédito necessário. 14 dias de teste grátis.</p>
+</div>
+</div>
+</section>
+<footer class="glass-panel mt-auto border-t border-white/50 bg-white/30 backdrop-blur-xl">
+<div class="max-w-6xl mx-auto px-6 py-12 flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[#0f172a] text-[14px]">waves</span>
+</div>
+<span class="font-bold text-[#0f172a]">Nexus Artifex</span>
+</div>
+<div class="flex gap-8 text-sm font-medium text-[#475569]">
+<a class="hover:text-[#0ea5e9] transition-colors" href="#">Sobre</a>
+<a class="hover:text-[#0ea5e9] transition-colors" href="#">Blog</a>
+<a class="hover:text-[#0ea5e9] transition-colors" href="#">Carreiras</a>
+<a class="hover:text-[#0ea5e9] transition-colors" href="#">Legal</a>
+</div>
+<div class="text-sm text-[#94a3b8]">
+                © 2023 Nexus Artifex. Feito com fluxo.
+            </div>
+</div>
+</footer>
+
+</body></html>
