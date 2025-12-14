@@ -8,6 +8,8 @@ interface SidebarItem {
     label: string;
     href?: string;
     active?: boolean;
+    disabled?: boolean;
+    onClick?: () => void;
 }
 
 interface SidebarProps {
@@ -20,33 +22,54 @@ interface SidebarProps {
         name: string;
         email: string;
         avatar?: string;
-    };
+    } | null;
+    /** Callbacks for actions */
+    onCreateIdea?: () => void;
+    onConnect?: () => void;
+    onEvolve?: () => void;
     className?: string;
 }
 
-const defaultActionItems: SidebarItem[] = [
-    { icon: "add_circle", label: "Nova Ideia" },
-    { icon: "hub", label: "Conectar" },
-    { icon: "psychology", label: "Evoluir (SCAMPER)" },
-];
-
-const defaultNavItems: SidebarItem[] = [
-    { icon: "dashboard", label: "Painel Principal", active: true },
-    { icon: "folder_open", label: "Meus Projetos" },
-    { icon: "groups", label: "Equipe" },
-];
-
-const defaultUser = {
-    name: "Ana Silva",
-    email: "ana@nexus.art",
-};
-
 export function Sidebar({
-    actionItems = defaultActionItems,
-    navItems = defaultNavItems,
-    user = defaultUser,
+    actionItems,
+    navItems,
+    user = null,
+    onCreateIdea,
+    onConnect,
+    onEvolve,
     className,
 }: SidebarProps) {
+    // Default action items with disabled states for backend-dependent features
+    const defaultActionItems: SidebarItem[] = [
+        {
+            icon: "add_circle",
+            label: "Criar Ideia",
+            onClick: onCreateIdea,
+            disabled: !onCreateIdea,
+        },
+        {
+            icon: "hub",
+            label: "Conectar Ideias",
+            onClick: onConnect,
+            disabled: true, // Requires backend
+        },
+        {
+            icon: "psychology",
+            label: "Evoluir (SCAMPER)",
+            onClick: onEvolve,
+            disabled: true, // Requires backend
+        },
+    ];
+
+    const defaultNavItems: SidebarItem[] = [
+        { icon: "dashboard", label: "Painel Principal", active: true },
+        { icon: "folder_open", label: "Meus Projetos", disabled: true },
+        { icon: "groups", label: "Equipe", disabled: true },
+    ];
+
+    const actions = actionItems || defaultActionItems;
+    const navs = navItems || defaultNavItems;
+
     return (
         <aside
             className={cn(
@@ -67,15 +90,35 @@ export function Sidebar({
                         Ações do Projeto
                     </h2>
                     <div className="space-y-1">
-                        {actionItems.map((item) => (
+                        {actions.map((item) => (
                             <button
                                 key={item.label}
-                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-[var(--color-primary)]/5 text-slate-600 hover:text-[var(--color-primary)] transition-all group text-left border border-transparent hover:border-[var(--color-primary)]/10"
+                                onClick={item.onClick}
+                                disabled={item.disabled}
+                                className={cn(
+                                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group text-left border border-transparent",
+                                    item.disabled
+                                        ? "text-slate-400 cursor-not-allowed opacity-60"
+                                        : "hover:bg-[var(--color-primary)]/5 text-slate-600 hover:text-[var(--color-primary)] hover:border-[var(--color-primary)]/10"
+                                )}
+                                title={item.disabled ? "Disponível após integração com backend" : undefined}
                             >
-                                <span className="material-symbols-outlined text-slate-400 group-hover:text-[var(--color-primary)] transition-colors">
+                                <span
+                                    className={cn(
+                                        "material-symbols-outlined transition-colors",
+                                        item.disabled
+                                            ? "text-slate-300"
+                                            : "text-slate-400 group-hover:text-[var(--color-primary)]"
+                                    )}
+                                >
                                     {item.icon}
                                 </span>
                                 {item.label}
+                                {item.disabled && (
+                                    <span className="material-symbols-outlined text-[14px] text-slate-300 ml-auto">
+                                        lock
+                                    </span>
+                                )}
                             </button>
                         ))}
                     </div>
@@ -87,15 +130,19 @@ export function Sidebar({
                         Navegação
                     </h2>
                     <div className="space-y-1">
-                        {navItems.map((item) => (
+                        {navs.map((item) => (
                             <button
                                 key={item.label}
+                                disabled={item.disabled}
                                 className={cn(
                                     "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-left",
                                     item.active
                                         ? "bg-gradient-to-r from-[var(--color-primary)]/10 to-transparent text-[var(--color-primary)] border-l-4 border-[var(--color-primary)] font-semibold shadow-sm"
-                                        : "hover:bg-slate-100 text-slate-600 border border-transparent"
+                                        : item.disabled
+                                            ? "text-slate-400 cursor-not-allowed opacity-60 border border-transparent"
+                                            : "hover:bg-slate-100 text-slate-600 border border-transparent"
                                 )}
+                                title={item.disabled ? "Disponível após integração com backend" : undefined}
                             >
                                 <span
                                     className={cn(
@@ -106,6 +153,11 @@ export function Sidebar({
                                     {item.icon}
                                 </span>
                                 {item.label}
+                                {item.disabled && !item.active && (
+                                    <span className="material-symbols-outlined text-[14px] text-slate-300 ml-auto">
+                                        lock
+                                    </span>
+                                )}
                             </button>
                         ))}
                     </div>
@@ -114,20 +166,31 @@ export function Sidebar({
 
             {/* User Footer */}
             <div className="p-4 border-t border-slate-200 bg-slate-50/50">
-                <button className="flex items-center gap-3 w-full hover:bg-slate-100 p-2 rounded-xl transition-colors">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent-cyan)] flex items-center justify-center text-white text-sm font-bold">
-                        {user.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
+                {user ? (
+                    <button className="flex items-center gap-3 w-full hover:bg-slate-100 p-2 rounded-xl transition-colors">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent-cyan)] flex items-center justify-center text-white text-sm font-bold">
+                            {user.name
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")}
+                        </div>
+                        <div className="flex flex-col items-start">
+                            <span className="text-sm font-semibold text-slate-700 leading-none">
+                                {user.name}
+                            </span>
+                            <span className="text-xs text-slate-500 mt-1">{user.email}</span>
+                        </div>
+                    </button>
+                ) : (
+                    <div className="flex items-center gap-3 p-2 text-slate-400">
+                        <div className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center">
+                            <span className="material-symbols-outlined text-slate-400 text-[20px]">
+                                person
+                            </span>
+                        </div>
+                        <span className="text-sm">Não autenticado</span>
                     </div>
-                    <div className="flex flex-col items-start">
-                        <span className="text-sm font-semibold text-slate-700 leading-none">
-                            {user.name}
-                        </span>
-                        <span className="text-xs text-slate-500 mt-1">{user.email}</span>
-                    </div>
-                </button>
+                )}
             </div>
         </aside>
     );

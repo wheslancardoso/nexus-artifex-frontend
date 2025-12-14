@@ -2,20 +2,30 @@
 
 import { useState } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
-import { GraphCanvas, NodeDetailsPanel, NodeData } from "@/components/graph";
-import { mockNodes, mockConnections, mockProject } from "@/data/mock";
+import { GraphCanvas, NodeDetailsPanel, NodeData, ConnectionData } from "@/components/graph";
 
 export default function DashboardPage() {
+    // Clean initial state - no mock data
+    const [nodes] = useState<NodeData[]>([]);
+    const [connections] = useState<ConnectionData[]>([]);
     const [selectedNode, setSelectedNode] = useState<NodeData | null>(null);
 
     const handleNodeSelect = (node: NodeData | null) => {
         setSelectedNode(node);
     };
 
+    const handleCreateIdea = () => {
+        // TODO: Implement when backend is integrated
+        // For now, this will be a placeholder
+    };
+
     return (
         <div className="h-screen w-full overflow-hidden flex bg-[var(--color-bg-light)]">
             {/* Left Sidebar */}
-            <Sidebar />
+            <Sidebar
+                user={null} // No authenticated user yet
+                onCreateIdea={handleCreateIdea}
+            />
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col relative h-full">
@@ -29,47 +39,38 @@ export default function DashboardPage() {
                             </span>
                         </div>
                         <h2 className="text-slate-800 font-bold text-lg tracking-tight">
-                            {mockProject.name}
+                            Novo Projeto
                         </h2>
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase tracking-wide border border-emerald-200">
-                            Online
+                        <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold uppercase tracking-wide border border-slate-200">
+                            Rascunho
                         </span>
                     </div>
 
                     <div className="flex items-center gap-2">
-                        {/* Collaborators */}
-                        <div className="flex -space-x-2 mr-6 border-r border-slate-200 pr-6 py-1">
-                            {mockProject.collaborators.slice(0, 2).map((collab) => (
-                                <div
-                                    key={collab.id}
-                                    className="w-8 h-8 rounded-full border-2 border-white bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent-cyan)] flex items-center justify-center text-white text-xs font-bold ring-1 ring-slate-100"
-                                    title={collab.name}
-                                >
-                                    {collab.name
-                                        .split(" ")
-                                        .map((n) => n[0])
-                                        .join("")}
-                                </div>
-                            ))}
-                            {mockProject.collaborators.length > 2 && (
-                                <div className="w-8 h-8 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500 ring-1 ring-slate-100">
-                                    +{mockProject.collaborators.length - 2}
-                                </div>
-                            )}
-                        </div>
-
                         {/* Action Buttons */}
-                        <button className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:bg-white hover:shadow-sm transition-all">
+                        <button
+                            className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 cursor-not-allowed opacity-50"
+                            title="Disponível após integração com backend"
+                            disabled
+                        >
                             <span className="material-symbols-outlined text-[20px]">
                                 search
                             </span>
                         </button>
-                        <button className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:bg-white hover:shadow-sm transition-all">
+                        <button
+                            className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 cursor-not-allowed opacity-50"
+                            title="Disponível após integração com backend"
+                            disabled
+                        >
                             <span className="material-symbols-outlined text-[20px]">
                                 notifications
                             </span>
                         </button>
-                        <button className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:bg-white hover:shadow-sm transition-all">
+                        <button
+                            className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 cursor-not-allowed opacity-50"
+                            title="Disponível após integração com backend"
+                            disabled
+                        >
                             <span className="material-symbols-outlined text-[20px]">
                                 settings
                             </span>
@@ -79,25 +80,21 @@ export default function DashboardPage() {
 
                 {/* Canvas Workspace */}
                 <GraphCanvas
-                    nodes={mockNodes}
-                    connections={mockConnections}
+                    nodes={nodes}
+                    connections={connections}
                     selectedNodeId={selectedNode?.id}
                     onNodeSelect={handleNodeSelect}
+                    onCreateNode={handleCreateIdea}
                     className="pt-16"
                 />
             </div>
 
-            {/* Right Sidebar (Details Panel) */}
-            {selectedNode && (
-                <NodeDetailsPanel
-                    node={selectedNode}
-                    onClose={() => setSelectedNode(null)}
-                    onSave={(node) => {
-                        console.log("Saving node:", node);
-                        setSelectedNode(null);
-                    }}
-                />
-            )}
+            {/* Right Sidebar (Details Panel) - Always visible */}
+            <NodeDetailsPanel
+                node={selectedNode}
+                connections={[]}
+                onClose={() => setSelectedNode(null)}
+            />
         </div>
     );
 }
