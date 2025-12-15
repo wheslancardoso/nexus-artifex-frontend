@@ -1,6 +1,6 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { GlassPanel, Button, Card } from "@/components/ui";
+import { GlassPanel, Button, Card, FloatingBubbles } from "@/components/ui";
 import { landingFeatures, flowSteps } from "@/data/mock";
 import Link from "next/link";
 
@@ -12,7 +12,10 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center pt-24 pb-20 px-6 overflow-hidden">
-        {/* Background Orbs - Frutiger Aero style */}
+        {/* Floating Bubbles - Frutiger Aero */}
+        <FloatingBubbles />
+
+        {/* Background Orbs */}
         <div className="absolute top-1/3 left-1/4 w-[600px] h-[600px] bg-orb bg-orb-aqua animate-float" />
         <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-orb bg-orb-gold animate-float-delayed" />
         <div className="absolute top-1/2 right-1/3 w-[300px] h-[300px] bg-orb bg-orb-rose animate-pulse-soft" />

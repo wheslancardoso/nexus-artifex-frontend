@@ -127,7 +127,7 @@ body {
   box-shadow: 0 8px 32px rgba(14, 165, 233, 0.06);
 }
 
-/* ===== GLOSSY BUTTONS - Frutiger Aero Style ===== */
+/* ===== GLOSSY BUTTONS - Frutiger Aero + iOS 26 Style ===== */
 .btn-glossy {
   position: relative;
   overflow: hidden;
@@ -141,8 +141,10 @@ body {
     0 4px 16px rgba(14, 165, 233, 0.35),
     0 2px 4px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Glossy reflection */
 .btn-glossy::before {
   content: '';
   position: absolute;
@@ -155,14 +157,46 @@ body {
       rgba(255, 255, 255, 0.1) 100%);
   border-radius: inherit;
   pointer-events: none;
+  transition: opacity 0.3s ease;
 }
 
+/* Shimmer effect */
+.btn-glossy::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.4) 50%,
+      transparent 100%);
+  pointer-events: none;
+  transition: left 0.5s ease;
+}
+
+/* iOS 26 hover effect */
 .btn-glossy:hover {
+  transform: translateY(-3px) scale(1.02);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
     inset 0 -1px 0 rgba(0, 0, 0, 0.1),
-    0 6px 24px rgba(14, 165, 233, 0.45),
-    0 3px 6px rgba(0, 0, 0, 0.12);
+    0 12px 40px rgba(14, 165, 233, 0.5),
+    0 4px 8px rgba(0, 0, 0, 0.15),
+    0 0 30px rgba(56, 189, 248, 0.3);
+}
+
+.btn-glossy:hover::before {
+  opacity: 0.8;
+}
+
+.btn-glossy:hover::after {
+  left: 100%;
+}
+
+.btn-glossy:active {
+  transform: translateY(-1px) scale(0.98);
 }
 
 .btn-glossy-gold {
@@ -305,6 +339,32 @@ body {
 
 .animate-pulse-soft {
   animation: pulse-soft 4s ease-in-out infinite;
+}
+
+/* ===== BUBBLE ANIMATION ===== */
+@keyframes bubble {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: translateY(-50vh) scale(1.1);
+    opacity: 0.6;
+  }
+
+  100% {
+    transform: translateY(-100vh) scale(0.8);
+    opacity: 0;
+  }
+}
+
+.animate-bubble {
+  animation: bubble 8s ease-in-out infinite;
 }
 
 /* ===== GRID PATTERN - Softer ===== */

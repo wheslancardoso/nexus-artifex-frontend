@@ -8,3 +8,5 @@ export { GlassPanel } from "./GlassPanel";
 export type { GlassPanelProps } from "./GlassPanel";
 
 export { EmptyState } from "./EmptyState";
+
+export { FloatingBubbles } from "./FloatingBubbles";
