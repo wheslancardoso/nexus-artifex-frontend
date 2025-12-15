@@ -86,23 +86,13 @@ export function Navbar({ links = defaultLinks, className }: NavbarProps) {
                             </Link>
                         ))}
                     </div>
-
-                    {/* Spacer */}
-                    <div className="w-8" />
-
-                    {/* CTA Buttons */}
-                    <div className="flex items-center gap-3">
-                        <button
-                            className="hidden sm:flex text-sm font-bold text-slate-500 hover:text-slate-800 px-3 py-2 transition-colors relative z-10"
-                            onMouseEnter={handleMouseEnter}
-                        >
-                            Entrar
-                        </button>
-                        <Button variant="glossy" size="sm" className="relative z-10">
-                            Começar
-                        </Button>
-                    </div>
                 </div>
+
+                {/* Entrar button - glass pill style */}
+                <button className="hidden sm:flex items-center gap-2 text-sm font-bold text-slate-700 px-5 py-2.5 transition-all duration-300 rounded-full bg-white/60 border border-white/80 shadow-[0_2px_10px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.9)] hover:bg-white/90 hover:shadow-[0_4px_15px_rgba(14,165,233,0.2),inset_0_1px_0_rgba(255,255,255,1)] hover:text-[var(--color-primary)] hover:-translate-y-0.5 active:translate-y-0">
+                    <span className="material-symbols-outlined text-[18px]">login</span>
+                    Entrar
+                </button>
             </GlassPanel>
         </nav>
     );
