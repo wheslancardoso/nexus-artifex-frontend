@@ -12,9 +12,10 @@ import {
     generateEdgeId,
     edgeExists,
 } from "@/components/graph";
+import { graphService } from "@/services/graph.service";
 
-// Simple ID generator (will be replaced by backend IDs)
-const generateId = () => `idea-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+// TODO: Replace with real project ID from auth/context
+const PROJECT_ID = "default-project";
 
 // Spiral position generator for non-overlapping nodes
 function getSpiralPosition(index: number, centerX: number, centerY: number) {
@@ -41,6 +42,7 @@ export default function DashboardPage() {
 
     // Modal state
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isCreating, setIsCreating] = useState(false);
 
     // Connection mode state
     const [isConnectMode, setIsConnectMode] = useState(false);
@@ -96,25 +98,41 @@ export default function DashboardPage() {
         setIsCreateModalOpen(false);
     }, []);
 
-    // Create new idea with spiral positioning
+    // Create new idea via API
     const handleCreateIdea = useCallback(
-        (data: { title: string; description: string }) => {
-            const position = getSpiralPosition(nodes.length, 450, 350);
+        async (data: { title: string; description: string }) => {
+            setIsCreating(true);
+            try {
+                const position = getSpiralPosition(nodes.length, 450, 350);
 
-            const newNode: NodeData = {
-                id: generateId(),
-                x: position.x,
-                y: position.y,
-                label: data.title,
-                description: data.description || undefined,
-                icon: "lightbulb",
-                size: nodes.length === 0 ? "lg" : "md",
-                variant: nodes.length === 0 ? "primary" : "default",
-            };
+                const createdNode = await graphService.createNode(PROJECT_ID, {
+                    title: data.title,
+                    description: data.description || undefined,
+                    positionX: position.x,
+                    positionY: position.y,
+                });
 
-            setNodes((prev) => [...prev, newNode]);
-            setSelectedNode(newNode);
-            handleCloseCreateModal();
+                // Convert API response to NodeData
+                const newNode: NodeData = {
+                    id: createdNode.id,
+                    x: createdNode.positionX,
+                    y: createdNode.positionY,
+                    label: createdNode.title,
+                    description: createdNode.description,
+                    icon: "lightbulb",
+                    size: nodes.length === 0 ? "lg" : "md",
+                    variant: nodes.length === 0 ? "primary" : "default",
+                };
+
+                setNodes((prev) => [...prev, newNode]);
+                setSelectedNode(newNode);
+                handleCloseCreateModal();
+            } catch (error) {
+                console.error("Failed to create idea:", error);
+                alert("Erro ao criar ideia. Tente novamente.");
+            } finally {
+                setIsCreating(false);
+            }
         },
         [nodes.length, handleCloseCreateModal]
     );
@@ -296,6 +314,7 @@ export default function DashboardPage() {
             {/* Create Idea Modal */}
             <CreateIdeaModal
                 isOpen={isCreateModalOpen}
+                isLoading={isCreating}
                 onClose={handleCloseCreateModal}
                 onCreate={handleCreateIdea}
             />

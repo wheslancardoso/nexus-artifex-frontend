@@ -6,12 +6,14 @@ import { Button } from "@/components/ui/Button";
 
 interface CreateIdeaModalProps {
     isOpen: boolean;
+    isLoading?: boolean;
     onClose: () => void;
     onCreate: (data: { title: string; description: string }) => void;
 }
 
 export function CreateIdeaModal({
     isOpen,
+    isLoading = false,
     onClose,
     onCreate,
 }: CreateIdeaModalProps) {
@@ -119,12 +121,22 @@ export function CreateIdeaModal({
                             variant="secondary"
                             onClick={handleClose}
                             className="flex-1"
+                            disabled={isLoading}
                         >
                             Cancelar
                         </Button>
-                        <Button type="submit" variant="primary" className="flex-1">
-                            <span className="material-symbols-outlined text-[18px]">add</span>
-                            Criar
+                        <Button type="submit" variant="primary" className="flex-1" disabled={isLoading}>
+                            {isLoading ? (
+                                <>
+                                    <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                                    Criando...
+                                </>
+                            ) : (
+                                <>
+                                    <span className="material-symbols-outlined text-[18px]">add</span>
+                                    Criar
+                                </>
+                            )}
                         </Button>
                     </div>
                 </form>
