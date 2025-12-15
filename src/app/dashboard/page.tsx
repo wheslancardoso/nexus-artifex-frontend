@@ -12,10 +12,33 @@ import {
     generateEdgeId,
     edgeExists,
 } from "@/components/graph";
-import { graphService } from "@/services/graph.service";
+import { graphService, IdeaNode, Connection } from "@/services/graph.service";
 
 // TODO: Replace with real project ID from auth/context
 const PROJECT_ID = "default-project";
+
+// Convert API IdeaNode to internal NodeData format
+function toNodeData(node: IdeaNode, index: number, total: number): NodeData {
+    return {
+        id: node.id,
+        x: node.positionX,
+        y: node.positionY,
+        label: node.title,
+        description: node.description,
+        icon: "lightbulb",
+        size: index === 0 && total > 0 ? "lg" : "md",
+        variant: index === 0 && total > 0 ? "primary" : "default",
+    };
+}
+
+// Convert API Connection to internal Edge format
+function toEdge(connection: Connection): Edge {
+    return {
+        id: connection.id,
+        sourceNodeId: connection.sourceNodeId,
+        targetNodeId: connection.targetNodeId,
+    };
+}
 
 // Spiral position generator for non-overlapping nodes
 function getSpiralPosition(index: number, centerX: number, centerY: number) {
@@ -35,6 +58,10 @@ function getSpiralPosition(index: number, centerX: number, centerY: number) {
 }
 
 export default function DashboardPage() {
+    // Loading state
+    const [isLoadingGraph, setIsLoadingGraph] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
+
     // Local state for graph data
     const [nodes, setNodes] = useState<NodeData[]>([]);
     const [edges, setEdges] = useState<Edge[]>([]);
@@ -47,6 +74,29 @@ export default function DashboardPage() {
     // Connection mode state
     const [isConnectMode, setIsConnectMode] = useState(false);
     const [connectSourceId, setConnectSourceId] = useState<string | null>(null);
+
+    // Load graph data on mount
+    useEffect(() => {
+        async function loadGraph() {
+            setIsLoadingGraph(true);
+            setLoadError(null);
+            try {
+                const graphData = await graphService.getGraph(PROJECT_ID);
+                const loadedNodes = graphData.nodes.map((node, i) =>
+                    toNodeData(node, i, graphData.nodes.length)
+                );
+                const loadedEdges = graphData.connections.map(toEdge);
+                setNodes(loadedNodes);
+                setEdges(loadedEdges);
+            } catch (error) {
+                console.error("Failed to load graph:", error);
+                setLoadError("Erro ao carregar projeto. Tente novamente.");
+            } finally {
+                setIsLoadingGraph(false);
+            }
+        }
+        loadGraph();
+    }, []);
 
     // Calculate connections for selected node
     const selectedNodeConnections = useMemo<ConnectionInfo[]>(() => {
@@ -220,6 +270,44 @@ export default function DashboardPage() {
         },
         [connectSourceId, edges]
     );
+
+    // Loading state
+    if (isLoadingGraph) {
+        return (
+            <div className="h-screen w-full flex items-center justify-center bg-[var(--color-bg-light)]">
+                <div className="glass-panel px-8 py-6 rounded-2xl flex items-center gap-4">
+                    <span className="material-symbols-outlined text-[var(--color-primary)] animate-spin text-3xl">
+                        progress_activity
+                    </span>
+                    <span className="text-lg font-medium text-slate-700">
+                        Carregando projeto…
+                    </span>
+                </div>
+            </div>
+        );
+    }
+
+    // Error state
+    if (loadError) {
+        return (
+            <div className="h-screen w-full flex items-center justify-center bg-[var(--color-bg-light)]">
+                <div className="glass-panel px-8 py-6 rounded-2xl flex flex-col items-center gap-4 max-w-md text-center">
+                    <span className="material-symbols-outlined text-red-500 text-4xl">
+                        error
+                    </span>
+                    <span className="text-lg font-medium text-slate-700">
+                        {loadError}
+                    </span>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="mt-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:bg-[var(--color-primary-dark)] transition-colors"
+                    >
+                        Tentar novamente
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="h-screen w-full overflow-hidden flex bg-[var(--color-bg-light)]">
