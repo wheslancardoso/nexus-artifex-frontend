@@ -1,8 +1,20 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { GlassPanel, Button, Card, FloatingBubbles } from "@/components/ui";
+import { GlassPanel, Button, Card } from "@/components/ui";
 import { landingFeatures, flowSteps } from "@/data/mock";
 import Link from "next/link";
+
+// Bubble data - LARGER and more visible
+const bubbles = [
+  { size: 35, left: "5%", delay: 0, duration: 12 },
+  { size: 45, left: "15%", delay: 2, duration: 14 },
+  { size: 28, left: "25%", delay: 1, duration: 11 },
+  { size: 55, left: "38%", delay: 3, duration: 15 },
+  { size: 40, left: "52%", delay: 0.5, duration: 13 },
+  { size: 32, left: "65%", delay: 2.5, duration: 12 },
+  { size: 50, left: "78%", delay: 4, duration: 14 },
+  { size: 38, left: "90%", delay: 1.5, duration: 13 },
+];
 
 export default function LandingPage() {
   return (
@@ -12,8 +24,35 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center pt-24 pb-20 px-6 overflow-hidden">
-        {/* Floating Bubbles - Frutiger Aero */}
-        <FloatingBubbles />
+        {/* Floating Bubbles - Large and visible */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 5 }} aria-hidden="true">
+          {bubbles.map((bubble, i) => (
+            <div
+              key={i}
+              className="absolute rounded-full animate-bubble"
+              style={{
+                width: bubble.size,
+                height: bubble.size,
+                left: bubble.left,
+                bottom: "10%",
+                animationDelay: `${bubble.delay}s`,
+                animationDuration: `${bubble.duration}s`,
+                background: `radial-gradient(circle at 25% 25%, 
+                  rgba(255, 255, 255, 1) 0%, 
+                  rgba(56, 189, 248, 0.5) 30%,
+                  rgba(6, 182, 212, 0.4) 60%,
+                  rgba(14, 165, 233, 0.3) 100%)`,
+                border: "2px solid rgba(255, 255, 255, 0.8)",
+                boxShadow: `
+                  inset -4px -4px 12px rgba(6, 182, 212, 0.3),
+                  inset 4px 4px 12px rgba(255, 255, 255, 1),
+                  0 6px 20px rgba(6, 182, 212, 0.4),
+                  0 0 15px rgba(255, 255, 255, 0.5)
+                `,
+              }}
+            />
+          ))}
+        </div>
 
         {/* Background Orbs */}
         <div className="absolute top-1/3 left-1/4 w-[600px] h-[600px] bg-orb bg-orb-aqua animate-float" />
