@@ -18,6 +18,8 @@ export interface NodeData {
 interface NodeProps {
     node: NodeData;
     selected?: boolean;
+    isConnectMode?: boolean;
+    isConnectSource?: boolean;
     onClick?: (node: NodeData) => void;
     onDrag?: (nodeId: string, x: number, y: number) => void;
 }
@@ -34,7 +36,14 @@ const iconSizeClasses = {
     lg: "text-[28px]",
 };
 
-export function Node({ node, selected = false, onClick, onDrag }: NodeProps) {
+export function Node({
+    node,
+    selected = false,
+    isConnectMode = false,
+    isConnectSource = false,
+    onClick,
+    onDrag,
+}: NodeProps) {
     const [isDragging, setIsDragging] = useState(false);
     const dragRef = useRef<{ startX: number; startY: number; nodeX: number; nodeY: number } | null>(null);
 
@@ -52,6 +61,9 @@ export function Node({ node, selected = false, onClick, onDrag }: NodeProps) {
 
     const handleMouseDown = useCallback(
         (e: React.MouseEvent) => {
+            // Disable drag in connect mode
+            if (isConnectMode || !onDrag) return;
+
             e.preventDefault();
             e.stopPropagation();
 
@@ -85,12 +97,12 @@ export function Node({ node, selected = false, onClick, onDrag }: NodeProps) {
             document.addEventListener("mousemove", handleMouseMove);
             document.addEventListener("mouseup", handleMouseUp);
         },
-        [node.id, node.x, node.y, onDrag]
+        [isConnectMode, node.id, node.x, node.y, onDrag]
     );
 
     const handleClick = useCallback(
         (e: React.MouseEvent) => {
-            // Only trigger click if not dragging
+            e.stopPropagation();
             if (!isDragging) {
                 onClick?.(node);
             }
@@ -103,7 +115,8 @@ export function Node({ node, selected = false, onClick, onDrag }: NodeProps) {
             className={cn(
                 "absolute -translate-x-1/2 -translate-y-1/2 group transition-all",
                 selected && "z-20",
-                isDragging ? "cursor-grabbing z-30" : "cursor-grab"
+                isDragging ? "cursor-grabbing z-30" : isConnectMode ? "cursor-pointer" : "cursor-grab",
+                isConnectMode && !isConnectSource && "hover:scale-110"
             )}
             style={{
                 left: node.x,
@@ -120,7 +133,9 @@ export function Node({ node, selected = false, onClick, onDrag }: NodeProps) {
                     sizeClasses[size],
                     variantStyles[variant],
                     selected && "ring-4 ring-[var(--color-primary)]/40 scale-105",
-                    isDragging && "scale-110 shadow-2xl"
+                    isDragging && "scale-110 shadow-2xl",
+                    isConnectSource && "ring-4 ring-green-400 scale-110 shadow-[0_0_20px_rgba(74,222,128,0.5)]",
+                    isConnectMode && !isConnectSource && "hover:ring-2 hover:ring-[var(--color-primary)]"
                 )}
             >
                 {node.icon && (
@@ -165,8 +180,13 @@ export function Node({ node, selected = false, onClick, onDrag }: NodeProps) {
             </div>
 
             {/* Selection indicator */}
-            {selected && !isDragging && (
+            {selected && !isDragging && !isConnectMode && (
                 <div className="absolute inset-0 -m-2 rounded-full border-2 border-dashed border-[var(--color-primary)]/30 animate-pulse pointer-events-none" />
+            )}
+
+            {/* Connect source indicator */}
+            {isConnectSource && (
+                <div className="absolute inset-0 -m-3 rounded-full border-2 border-green-400 animate-ping pointer-events-none opacity-50" />
             )}
         </div>
     );

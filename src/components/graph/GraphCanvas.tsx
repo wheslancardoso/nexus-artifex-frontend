@@ -4,32 +4,74 @@ import { cn } from "@/lib/utils";
 import { Node, NodeData } from "./Node";
 import { NodeConnection, ConnectionGradientDef, ConnectionData } from "./NodeConnection";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Edge } from "./types";
+import { useMemo } from "react";
 
 interface GraphCanvasProps {
     nodes: NodeData[];
-    connections: ConnectionData[];
+    edges: Edge[];
     selectedNodeId?: string | null;
+    connectSourceId?: string | null; // For connection mode
+    isConnectMode?: boolean;
     onNodeSelect?: (node: NodeData | null) => void;
     onNodeDrag?: (nodeId: string, x: number, y: number) => void;
+    onNodeConnectClick?: (node: NodeData) => void;
     onCreateNode?: () => void;
+    onCancelConnect?: () => void;
     className?: string;
 }
 
 export function GraphCanvas({
     nodes,
-    connections,
+    edges,
     selectedNodeId,
+    connectSourceId,
+    isConnectMode = false,
     onNodeSelect,
     onNodeDrag,
+    onNodeConnectClick,
     onCreateNode,
+    onCancelConnect,
     className,
 }: GraphCanvasProps) {
     const isEmpty = nodes.length === 0;
 
-    // Deselect when clicking on canvas background
+    // Convert edges to connection data with coordinates
+    const connections: ConnectionData[] = useMemo(() => {
+        return edges
+            .map((edge) => {
+                const sourceNode = nodes.find((n) => n.id === edge.sourceNodeId);
+                const targetNode = nodes.find((n) => n.id === edge.targetNodeId);
+                if (!sourceNode || !targetNode) return null;
+                return {
+                    id: edge.id,
+                    fromX: sourceNode.x,
+                    fromY: sourceNode.y,
+                    toX: targetNode.x,
+                    toY: targetNode.y,
+                    type: "solid" as const,
+                };
+            })
+            .filter(Boolean) as ConnectionData[];
+    }, [edges, nodes]);
+
+    // Handle canvas click
     const handleCanvasClick = (e: React.MouseEvent) => {
         if (e.target === e.currentTarget) {
-            onNodeSelect?.(null);
+            if (isConnectMode) {
+                onCancelConnect?.();
+            } else {
+                onNodeSelect?.(null);
+            }
+        }
+    };
+
+    // Handle node click based on mode
+    const handleNodeClick = (node: NodeData) => {
+        if (isConnectMode) {
+            onNodeConnectClick?.(node);
+        } else {
+            onNodeSelect?.(node);
         }
     };
 
@@ -37,6 +79,7 @@ export function GraphCanvas({
         <main
             className={cn(
                 "flex-1 relative bg-[#f0f6ff] overflow-hidden",
+                isConnectMode && "cursor-crosshair",
                 className
             )}
             onClick={handleCanvasClick}
@@ -46,6 +89,26 @@ export function GraphCanvas({
                 className="absolute inset-0 opacity-30 graph-grid"
                 aria-hidden="true"
             />
+
+            {/* Connection Mode Indicator */}
+            {isConnectMode && (
+                <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20 glass-panel px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
+                    <span className="material-symbols-outlined text-[var(--color-primary)] animate-pulse">
+                        hub
+                    </span>
+                    <span className="text-sm font-medium text-slate-700">
+                        {connectSourceId
+                            ? "Clique no nó de destino"
+                            : "Clique no nó de origem"}
+                    </span>
+                    <button
+                        onClick={onCancelConnect}
+                        className="ml-2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                    >
+                        (Esc)
+                    </button>
+                </div>
+            )}
 
             {/* Empty State */}
             {isEmpty ? (
@@ -81,8 +144,10 @@ export function GraphCanvas({
                             key={node.id}
                             node={node}
                             selected={selectedNodeId === node.id}
-                            onClick={onNodeSelect}
-                            onDrag={onNodeDrag}
+                            isConnectMode={isConnectMode}
+                            isConnectSource={connectSourceId === node.id}
+                            onClick={handleNodeClick}
+                            onDrag={isConnectMode ? undefined : onNodeDrag}
                         />
                     ))}
                 </div>

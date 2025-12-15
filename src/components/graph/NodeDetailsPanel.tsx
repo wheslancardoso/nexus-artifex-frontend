@@ -3,8 +3,17 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { NodeData } from "./Node";
+import { Edge } from "./types";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+
+// Simplified connection info for display
+export interface ConnectionInfo {
+    edgeId: string;
+    nodeId: string;
+    nodeLabel: string;
+    direction: "outgoing" | "incoming";
+}
 
 export interface Connection {
     id: string;
@@ -18,19 +27,21 @@ export interface Connection {
 
 interface NodeDetailsPanelProps {
     node: NodeData | null;
-    connections?: Connection[];
+    nodeConnections?: ConnectionInfo[];
     onClose?: () => void;
     onUpdate?: (nodeId: string, data: { label: string; description: string }) => void;
     onDelete?: (nodeId: string) => void;
+    onDeleteEdge?: (edgeId: string) => void;
     className?: string;
 }
 
 export function NodeDetailsPanel({
     node,
-    connections = [],
+    nodeConnections = [],
     onClose,
     onUpdate,
     onDelete,
+    onDeleteEdge,
     className,
 }: NodeDetailsPanelProps) {
     const [title, setTitle] = useState("");
@@ -142,24 +153,8 @@ export function NodeDetailsPanel({
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             placeholder="Adicione uma descrição para esta ideia..."
-                            className="w-full h-32 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-all resize-none leading-relaxed shadow-sm"
+                            className="w-full h-24 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-all resize-none leading-relaxed shadow-sm"
                         />
-                    </div>
-                    <div>
-                        <label className="block text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-wider">
-                            Status & Prioridade
-                        </label>
-                        <div className="flex gap-2">
-                            <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg cursor-not-allowed opacity-60">
-                                <span className="w-2 h-2 rounded-full bg-slate-400" />
-                                <span className="text-xs font-semibold text-slate-600">
-                                    Rascunho
-                                </span>
-                            </div>
-                            <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg cursor-not-allowed opacity-60">
-                                <span className="text-xs font-semibold text-slate-600">Normal</span>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -167,22 +162,55 @@ export function NodeDetailsPanel({
 
                 {/* Connections List */}
                 <div>
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center justify-between mb-3">
                         <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                            Conexões ({connections.length})
+                            Conexões ({nodeConnections.length})
                         </label>
-                        <button
-                            className="text-slate-400 text-xs font-bold flex items-center gap-1 px-2 py-1 rounded cursor-not-allowed opacity-50"
-                            disabled
-                            title="Disponível em breve"
-                        >
-                            <span className="material-symbols-outlined text-[16px]">add</span>
-                            Adicionar
-                        </button>
                     </div>
-                    <div className="text-center py-6 text-slate-400 text-sm">
-                        Nenhuma conexão ainda
-                    </div>
+                    {nodeConnections.length === 0 ? (
+                        <div className="text-center py-4 text-slate-400 text-sm bg-slate-50 rounded-xl">
+                            Nenhuma conexão ainda
+                        </div>
+                    ) : (
+                        <div className="space-y-2">
+                            {nodeConnections.map((conn) => (
+                                <div
+                                    key={conn.edgeId}
+                                    className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-white hover:shadow-md transition-all border border-slate-100 hover:border-[var(--color-primary)]/20 group"
+                                >
+                                    <div
+                                        className={cn(
+                                            "w-8 h-8 rounded-lg flex items-center justify-center",
+                                            conn.direction === "outgoing"
+                                                ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
+                                                : "bg-green-100 text-green-600"
+                                        )}
+                                    >
+                                        <span className="material-symbols-outlined text-[16px]">
+                                            {conn.direction === "outgoing" ? "arrow_forward" : "arrow_back"}
+                                        </span>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-semibold text-slate-800 truncate">
+                                            {conn.nodeLabel}
+                                        </p>
+                                        <p className="text-[10px] text-slate-400">
+                                            {conn.direction === "outgoing" ? "Conecta para" : "Recebe de"}
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => onDeleteEdge?.(conn.edgeId)}
+                                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100"
+                                        title="Remover conexão"
+                                    >
+                                        <span className="material-symbols-outlined text-[16px]">
+                                            close
+                                        </span>
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 <div className="h-px bg-slate-100" />
@@ -204,11 +232,7 @@ export function NodeDetailsPanel({
 
             {/* Footer Actions */}
             <div className="p-4 border-t border-slate-200 bg-slate-50/80 backdrop-blur-sm">
-                <Button
-                    onClick={handleSave}
-                    className="w-full"
-                    disabled={!hasChanges}
-                >
+                <Button onClick={handleSave} className="w-full" disabled={!hasChanges}>
                     <span className="material-symbols-outlined text-[20px]">save</span>
                     {hasChanges ? "Salvar Alterações" : "Sem Alterações"}
                 </Button>

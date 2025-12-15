@@ -1,13 +1,16 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import {
     GraphCanvas,
     NodeDetailsPanel,
     CreateIdeaModal,
     NodeData,
-    ConnectionData,
+    Edge,
+    ConnectionInfo,
+    generateEdgeId,
+    edgeExists,
 } from "@/components/graph";
 
 // Simple ID generator (will be replaced by backend IDs)
@@ -19,10 +22,8 @@ function getSpiralPosition(index: number, centerX: number, centerY: number) {
         return { x: centerX, y: centerY };
     }
 
-    // Spiral parameters
-    const angleStep = 0.8; // radians per step
-    const radiusStep = 40; // pixels per revolution
-
+    const angleStep = 0.8;
+    const radiusStep = 40;
     const angle = index * angleStep;
     const radius = 120 + (angle * radiusStep) / (2 * Math.PI);
 
@@ -35,11 +36,50 @@ function getSpiralPosition(index: number, centerX: number, centerY: number) {
 export default function DashboardPage() {
     // Local state for graph data
     const [nodes, setNodes] = useState<NodeData[]>([]);
-    const [connections] = useState<ConnectionData[]>([]);
+    const [edges, setEdges] = useState<Edge[]>([]);
     const [selectedNode, setSelectedNode] = useState<NodeData | null>(null);
 
     // Modal state
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+    // Connection mode state
+    const [isConnectMode, setIsConnectMode] = useState(false);
+    const [connectSourceId, setConnectSourceId] = useState<string | null>(null);
+
+    // Calculate connections for selected node
+    const selectedNodeConnections = useMemo<ConnectionInfo[]>(() => {
+        if (!selectedNode) return [];
+
+        return edges
+            .filter(
+                (edge) =>
+                    edge.sourceNodeId === selectedNode.id ||
+                    edge.targetNodeId === selectedNode.id
+            )
+            .map((edge) => {
+                const isOutgoing = edge.sourceNodeId === selectedNode.id;
+                const otherNodeId = isOutgoing ? edge.targetNodeId : edge.sourceNodeId;
+                const otherNode = nodes.find((n) => n.id === otherNodeId);
+
+                return {
+                    edgeId: edge.id,
+                    nodeId: otherNodeId,
+                    nodeLabel: otherNode?.label || "Desconhecido",
+                    direction: isOutgoing ? "outgoing" : "incoming",
+                } as ConnectionInfo;
+            });
+    }, [selectedNode, edges, nodes]);
+
+    // Handle ESC key to cancel connection mode
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape" && isConnectMode) {
+                handleCancelConnect();
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [isConnectMode]);
 
     // Handle node selection
     const handleNodeSelect = useCallback((node: NodeData | null) => {
@@ -82,11 +122,8 @@ export default function DashboardPage() {
     // Handle node drag
     const handleNodeDrag = useCallback((nodeId: string, x: number, y: number) => {
         setNodes((prev) =>
-            prev.map((node) =>
-                node.id === nodeId ? { ...node, x, y } : node
-            )
+            prev.map((node) => (node.id === nodeId ? { ...node, x, y } : node))
         );
-        // Update selected node position too
         setSelectedNode((prev) =>
             prev?.id === nodeId ? { ...prev, x, y } : prev
         );
@@ -102,7 +139,6 @@ export default function DashboardPage() {
                         : node
                 )
             );
-            // Update selected node too
             setSelectedNode((prev) =>
                 prev?.id === nodeId
                     ? { ...prev, label: data.label, description: data.description }
@@ -115,13 +151,67 @@ export default function DashboardPage() {
     // Handle node delete
     const handleNodeDelete = useCallback((nodeId: string) => {
         setNodes((prev) => prev.filter((node) => node.id !== nodeId));
+        setEdges((prev) =>
+            prev.filter(
+                (edge) => edge.sourceNodeId !== nodeId && edge.targetNodeId !== nodeId
+            )
+        );
         setSelectedNode((prev) => (prev?.id === nodeId ? null : prev));
     }, []);
+
+    // Handle edge delete
+    const handleEdgeDelete = useCallback((edgeId: string) => {
+        setEdges((prev) => prev.filter((edge) => edge.id !== edgeId));
+    }, []);
+
+    // Toggle connection mode
+    const handleToggleConnectMode = useCallback(() => {
+        if (isConnectMode) {
+            setIsConnectMode(false);
+            setConnectSourceId(null);
+        } else {
+            setIsConnectMode(true);
+            setConnectSourceId(null);
+            setSelectedNode(null);
+        }
+    }, [isConnectMode]);
+
+    // Cancel connection mode
+    const handleCancelConnect = useCallback(() => {
+        setIsConnectMode(false);
+        setConnectSourceId(null);
+    }, []);
+
+    // Handle node click in connection mode
+    const handleNodeConnectClick = useCallback(
+        (node: NodeData) => {
+            if (!connectSourceId) {
+                setConnectSourceId(node.id);
+            } else {
+                if (node.id !== connectSourceId && !edgeExists(edges, connectSourceId, node.id)) {
+                    const newEdge: Edge = {
+                        id: generateEdgeId(connectSourceId, node.id),
+                        sourceNodeId: connectSourceId,
+                        targetNodeId: node.id,
+                    };
+                    setEdges((prev) => [...prev, newEdge]);
+                }
+                setIsConnectMode(false);
+                setConnectSourceId(null);
+            }
+        },
+        [connectSourceId, edges]
+    );
 
     return (
         <div className="h-screen w-full overflow-hidden flex bg-[var(--color-bg-light)]">
             {/* Left Sidebar */}
-            <Sidebar user={null} onCreateIdea={handleOpenCreateModal} />
+            <Sidebar
+                user={null}
+                isConnectMode={isConnectMode}
+                onCreateIdea={handleOpenCreateModal}
+                onConnect={nodes.length >= 2 ? handleToggleConnectMode : undefined}
+            />
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col relative h-full">
@@ -145,6 +235,11 @@ export default function DashboardPage() {
                                 {nodes.length} {nodes.length === 1 ? "ideia" : "ideias"}
                             </span>
                         )}
+                        {edges.length > 0 && (
+                            <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-600 text-[10px] font-bold">
+                                {edges.length} {edges.length === 1 ? "conexão" : "conexões"}
+                            </span>
+                        )}
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -153,27 +248,21 @@ export default function DashboardPage() {
                             title="Disponível após integração com backend"
                             disabled
                         >
-                            <span className="material-symbols-outlined text-[20px]">
-                                search
-                            </span>
+                            <span className="material-symbols-outlined text-[20px]">search</span>
                         </button>
                         <button
                             className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 cursor-not-allowed opacity-50"
                             title="Disponível após integração com backend"
                             disabled
                         >
-                            <span className="material-symbols-outlined text-[20px]">
-                                notifications
-                            </span>
+                            <span className="material-symbols-outlined text-[20px]">notifications</span>
                         </button>
                         <button
                             className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 cursor-not-allowed opacity-50"
                             title="Disponível após integração com backend"
                             disabled
                         >
-                            <span className="material-symbols-outlined text-[20px]">
-                                settings
-                            </span>
+                            <span className="material-symbols-outlined text-[20px]">settings</span>
                         </button>
                     </div>
                 </header>
@@ -181,11 +270,15 @@ export default function DashboardPage() {
                 {/* Canvas Workspace */}
                 <GraphCanvas
                     nodes={nodes}
-                    connections={connections}
+                    edges={edges}
                     selectedNodeId={selectedNode?.id}
+                    connectSourceId={connectSourceId}
+                    isConnectMode={isConnectMode}
                     onNodeSelect={handleNodeSelect}
                     onNodeDrag={handleNodeDrag}
+                    onNodeConnectClick={handleNodeConnectClick}
                     onCreateNode={handleOpenCreateModal}
+                    onCancelConnect={handleCancelConnect}
                     className="pt-16"
                 />
             </div>
@@ -193,10 +286,11 @@ export default function DashboardPage() {
             {/* Right Sidebar (Details Panel) */}
             <NodeDetailsPanel
                 node={selectedNode}
-                connections={[]}
+                nodeConnections={selectedNodeConnections}
                 onClose={() => setSelectedNode(null)}
                 onUpdate={handleNodeUpdate}
                 onDelete={handleNodeDelete}
+                onDeleteEdge={handleEdgeDelete}
             />
 
             {/* Create Idea Modal */}

@@ -9,6 +9,7 @@ interface SidebarItem {
     href?: string;
     active?: boolean;
     disabled?: boolean;
+    highlight?: boolean;
     onClick?: () => void;
 }
 
@@ -23,6 +24,8 @@ interface SidebarProps {
         email: string;
         avatar?: string;
     } | null;
+    /** Connection mode active */
+    isConnectMode?: boolean;
     /** Callbacks for actions */
     onCreateIdea?: () => void;
     onConnect?: () => void;
@@ -34,12 +37,13 @@ export function Sidebar({
     actionItems,
     navItems,
     user = null,
+    isConnectMode = false,
     onCreateIdea,
     onConnect,
     onEvolve,
     className,
 }: SidebarProps) {
-    // Default action items with disabled states for backend-dependent features
+    // Default action items
     const defaultActionItems: SidebarItem[] = [
         {
             icon: "add_circle",
@@ -49,9 +53,10 @@ export function Sidebar({
         },
         {
             icon: "hub",
-            label: "Conectar Ideias",
+            label: isConnectMode ? "Conectando..." : "Conectar Ideias",
             onClick: onConnect,
-            disabled: true, // Requires backend
+            disabled: !onConnect,
+            highlight: isConnectMode,
         },
         {
             icon: "psychology",
@@ -96,10 +101,12 @@ export function Sidebar({
                                 onClick={item.onClick}
                                 disabled={item.disabled}
                                 className={cn(
-                                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group text-left border border-transparent",
+                                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group text-left border",
                                     item.disabled
-                                        ? "text-slate-400 cursor-not-allowed opacity-60"
-                                        : "hover:bg-[var(--color-primary)]/5 text-slate-600 hover:text-[var(--color-primary)] hover:border-[var(--color-primary)]/10"
+                                        ? "text-slate-400 cursor-not-allowed opacity-60 border-transparent"
+                                        : item.highlight
+                                            ? "bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-lg"
+                                            : "hover:bg-[var(--color-primary)]/5 text-slate-600 hover:text-[var(--color-primary)] border-transparent hover:border-[var(--color-primary)]/10"
                                 )}
                                 title={item.disabled ? "Disponível após integração com backend" : undefined}
                             >
@@ -108,7 +115,9 @@ export function Sidebar({
                                         "material-symbols-outlined transition-colors",
                                         item.disabled
                                             ? "text-slate-300"
-                                            : "text-slate-400 group-hover:text-[var(--color-primary)]"
+                                            : item.highlight
+                                                ? "text-white"
+                                                : "text-slate-400 group-hover:text-[var(--color-primary)]"
                                     )}
                                 >
                                     {item.icon}
@@ -118,6 +127,9 @@ export function Sidebar({
                                     <span className="material-symbols-outlined text-[14px] text-slate-300 ml-auto">
                                         lock
                                     </span>
+                                )}
+                                {item.highlight && (
+                                    <span className="ml-auto text-xs opacity-80">Esc para cancelar</span>
                                 )}
                             </button>
                         ))}
