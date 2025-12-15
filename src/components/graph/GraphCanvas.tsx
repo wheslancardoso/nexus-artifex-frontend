@@ -78,7 +78,7 @@ export function GraphCanvas({
     return (
         <main
             className={cn(
-                "flex-1 relative bg-[#f0f6ff] overflow-hidden",
+                "flex-1 relative overflow-hidden aurora-bg",
                 isConnectMode && "cursor-crosshair",
                 className
             )}
@@ -86,7 +86,7 @@ export function GraphCanvas({
         >
             {/* Grid Background Pattern */}
             <div
-                className="absolute inset-0 opacity-30 graph-grid"
+                className="absolute inset-0 opacity-40 graph-grid"
                 aria-hidden="true"
             />
 

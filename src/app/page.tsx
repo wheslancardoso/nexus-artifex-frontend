@@ -6,20 +6,21 @@ import Link from "next/link";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen flex flex-col ocean-bg overflow-x-hidden">
+    <div className="min-h-screen flex flex-col aurora-bg overflow-x-hidden">
       {/* Navbar */}
       <Navbar />
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center pt-24 pb-20 px-6 overflow-hidden">
-        {/* Background Orbs */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-blue-200 to-cyan-200 rounded-full blur-[100px] opacity-40 animate-pulse" />
-        <div className="absolute top-20 right-20 w-64 h-64 bg-[var(--color-accent-yellow)]/20 rounded-full blur-[80px]" />
+        {/* Background Orbs - Frutiger Aero style */}
+        <div className="absolute top-1/3 left-1/4 w-[600px] h-[600px] bg-orb bg-orb-aqua animate-float" />
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-orb bg-orb-gold animate-float-delayed" />
+        <div className="absolute top-1/2 right-1/3 w-[300px] h-[300px] bg-orb bg-orb-rose animate-pulse-soft" />
 
         <div className="relative z-10 max-w-4xl w-full flex flex-col items-center text-center gap-8">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/40 border border-white/50 backdrop-blur-md shadow-sm mb-4">
-            <span className="w-2 h-2 rounded-full bg-[var(--color-accent-yellow)] animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-panel shadow-sm mb-4">
+            <span className="w-2 h-2 rounded-full bg-[var(--color-accent-gold)] animate-pulse" />
             <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
               Inteligência Criativa Viva
             </span>
@@ -28,7 +29,7 @@ export default function LandingPage() {
           {/* Title */}
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-slate-900 leading-[1.1] drop-shadow-sm">
             Mergulhe no <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-primary)] to-[#0284c7]">
+            <span className="text-gradient-aqua">
               Oceano de Ideias
             </span>
           </h1>
@@ -57,11 +58,11 @@ export default function LandingPage() {
 
           {/* Hero Image */}
           <div className="mt-16 w-full max-w-5xl relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-blue-400 rounded-[2.5rem] blur opacity-25 group-hover:opacity-40 transition duration-1000" />
+            <div className="absolute -inset-1 bg-gradient-to-r from-[var(--color-accent-aqua)] via-[var(--color-primary)] to-[var(--color-accent-teal)] rounded-[2.5rem] blur opacity-30 group-hover:opacity-50 transition duration-1000" />
             <GlassPanel className="rounded-[2rem] p-4 relative overflow-hidden aspect-[16/9] md:aspect-[21/9]">
-              <div className="w-full h-full rounded-[1.5rem] bg-gradient-to-br from-blue-100 via-cyan-50 to-blue-200 flex items-center justify-center">
-                <div className="glass-panel px-6 py-4 rounded-xl flex items-center gap-3 animate-bounce shadow-xl" style={{ animationDuration: "3s" }}>
-                  <span className="material-symbols-outlined text-[var(--color-accent-yellow)]">
+              <div className="w-full h-full rounded-[1.5rem] bg-gradient-to-br from-sky-100 via-cyan-50 to-teal-100 flex items-center justify-center">
+                <div className="glass-panel px-6 py-4 rounded-xl flex items-center gap-3 animate-float shadow-xl">
+                  <span className="material-symbols-outlined text-[var(--color-accent-gold)]">
                     auto_awesome
                   </span>
                   <span className="font-bold text-slate-800">
@@ -191,8 +192,8 @@ export default function LandingPage() {
                 <div className="w-20 h-20 rounded-full bg-white shadow-lg flex items-center justify-center mb-6 z-10 relative group-hover:-translate-y-2 transition-transform duration-300">
                   <div
                     className={`absolute inset-0 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300 ${step.highlight
-                        ? "bg-[var(--color-accent-yellow)]/50"
-                        : "bg-cyan-100"
+                      ? "bg-[var(--color-accent-yellow)]/50"
+                      : "bg-cyan-100"
                       }`}
                   />
                   <span

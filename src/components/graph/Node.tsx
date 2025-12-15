@@ -50,13 +50,14 @@ export function Node({
     const size = node.size || "md";
     const variant = node.variant || "default";
 
+    // Frutiger Aero style variants with liquid glass effect
     const variantStyles = {
         default:
-            "bg-white border-2 border-slate-200 shadow-lg hover:border-[var(--color-primary)] hover:shadow-xl",
+            "bg-white/90 backdrop-blur-sm border border-white/60 node-glow",
         primary:
-            "bg-white border-[6px] border-[var(--color-primary)]/10 shadow-[0_8px_30px_rgba(37,140,244,0.15)] hover:border-[var(--color-primary)]/30",
+            "bg-gradient-to-br from-white to-sky-50 border-2 border-[var(--color-primary)]/20 node-glow-selected",
         secondary:
-            "bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent-cyan)] shadow-[0_8px_30px_rgba(37,140,244,0.5)] text-white border border-white/50",
+            "bg-gradient-to-br from-[var(--color-primary)] via-[var(--color-accent-aqua)] to-[var(--color-accent-teal)] text-white border border-white/30 shadow-[0_8px_32px_rgba(6,182,212,0.4)]",
     };
 
     const handleMouseDown = useCallback(

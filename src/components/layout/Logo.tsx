@@ -1,10 +1,13 @@
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 interface LogoProps {
     /** Logo size */
     size?: "sm" | "md" | "lg";
     /** Show text alongside icon */
     showText?: boolean;
+    /** Make logo a link to home */
+    href?: string;
     /** Custom className */
     className?: string;
 }
@@ -21,8 +24,8 @@ const textSizeClasses = {
     lg: "text-xl",
 };
 
-export function Logo({ size = "md", showText = true, className }: LogoProps) {
-    return (
+export function Logo({ size = "md", showText = true, href = "/", className }: LogoProps) {
+    const content = (
         <div className={cn("flex items-center gap-3", className)}>
             <div
                 className={cn(
@@ -49,4 +52,15 @@ export function Logo({ size = "md", showText = true, className }: LogoProps) {
             )}
         </div>
     );
+
+    if (href) {
+        return (
+            <Link href={href} className="hover:opacity-80 transition-opacity">
+                {content}
+            </Link>
+        );
+    }
+
+    return content;
 }
+
