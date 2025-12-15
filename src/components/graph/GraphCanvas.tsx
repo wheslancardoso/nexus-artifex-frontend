@@ -15,6 +15,7 @@ interface GraphCanvasProps {
     isConnectMode?: boolean;
     onNodeSelect?: (node: NodeData | null) => void;
     onNodeDrag?: (nodeId: string, x: number, y: number) => void;
+    onNodeDragEnd?: (nodeId: string, x: number, y: number) => void;
     onNodeConnectClick?: (node: NodeData) => void;
     onCreateNode?: () => void;
     onCancelConnect?: () => void;
@@ -29,6 +30,7 @@ export function GraphCanvas({
     isConnectMode = false,
     onNodeSelect,
     onNodeDrag,
+    onNodeDragEnd,
     onNodeConnectClick,
     onCreateNode,
     onCancelConnect,
@@ -148,6 +150,7 @@ export function GraphCanvas({
                             isConnectSource={connectSourceId === node.id}
                             onClick={handleNodeClick}
                             onDrag={isConnectMode ? undefined : onNodeDrag}
+                            onDragEnd={isConnectMode ? undefined : onNodeDragEnd}
                         />
                     ))}
                 </div>

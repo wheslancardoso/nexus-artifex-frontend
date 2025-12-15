@@ -22,6 +22,7 @@ interface NodeProps {
     isConnectSource?: boolean;
     onClick?: (node: NodeData) => void;
     onDrag?: (nodeId: string, x: number, y: number) => void;
+    onDragEnd?: (nodeId: string, x: number, y: number) => void;
 }
 
 const sizeClasses = {
@@ -43,6 +44,7 @@ export function Node({
     isConnectSource = false,
     onClick,
     onDrag,
+    onDragEnd,
 }: NodeProps) {
     const [isDragging, setIsDragging] = useState(false);
     const dragRef = useRef<{ startX: number; startY: number; nodeX: number; nodeY: number } | null>(null);
@@ -90,6 +92,12 @@ export function Node({
 
             const handleMouseUp = () => {
                 setIsDragging(false);
+                // Call onDragEnd with final position
+                if (dragRef.current) {
+                    const deltaX = 0; // Position already updated during drag
+                    const deltaY = 0;
+                    onDragEnd?.(node.id, node.x, node.y);
+                }
                 dragRef.current = null;
                 document.removeEventListener("mousemove", handleMouseMove);
                 document.removeEventListener("mouseup", handleMouseUp);

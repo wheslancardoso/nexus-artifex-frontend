@@ -37,6 +37,11 @@ export interface CreateNodePayload {
     positionY: number;
 }
 
+export interface UpdateNodePositionPayload {
+    positionX: number;
+    positionY: number;
+}
+
 // ===== SERVICE =====
 
 export const graphService = {
@@ -54,5 +59,13 @@ export const graphService = {
      */
     async createNode(projectId: string, payload: CreateNodePayload): Promise<IdeaNode> {
         return api.post<IdeaNode>(`/projects/${projectId}/nodes`, payload);
+    },
+
+    /**
+     * PUT /nodes/{nodeId}
+     * Updates the position of an existing node
+     */
+    async updateNodePosition(nodeId: string, positionX: number, positionY: number): Promise<IdeaNode> {
+        return api.put<IdeaNode>(`/nodes/${nodeId}`, { positionX, positionY });
     },
 };

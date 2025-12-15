@@ -187,7 +187,7 @@ export default function DashboardPage() {
         [nodes.length, handleCloseCreateModal]
     );
 
-    // Handle node drag
+    // Handle node drag (optimistic update during drag)
     const handleNodeDrag = useCallback((nodeId: string, x: number, y: number) => {
         setNodes((prev) =>
             prev.map((node) => (node.id === nodeId ? { ...node, x, y } : node))
@@ -196,6 +196,19 @@ export default function DashboardPage() {
             prev?.id === nodeId ? { ...prev, x, y } : prev
         );
     }, []);
+
+    // Handle node drag end - persist to backend
+    const handleNodeDragEnd = useCallback(
+        async (nodeId: string, x: number, y: number) => {
+            try {
+                await graphService.updateNodePosition(nodeId, x, y);
+            } catch (error) {
+                console.error("Failed to save node position:", error);
+                // MVP: Don't revert position, just log error
+            }
+        },
+        []
+    );
 
     // Handle node update (title, description)
     const handleNodeUpdate = useCallback(
@@ -382,6 +395,7 @@ export default function DashboardPage() {
                     isConnectMode={isConnectMode}
                     onNodeSelect={handleNodeSelect}
                     onNodeDrag={handleNodeDrag}
+                    onNodeDragEnd={handleNodeDragEnd}
                     onNodeConnectClick={handleNodeConnectClick}
                     onCreateNode={handleOpenCreateModal}
                     onCancelConnect={handleCancelConnect}
