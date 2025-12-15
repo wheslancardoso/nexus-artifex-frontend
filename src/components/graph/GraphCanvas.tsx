@@ -10,6 +10,7 @@ interface GraphCanvasProps {
     connections: ConnectionData[];
     selectedNodeId?: string | null;
     onNodeSelect?: (node: NodeData | null) => void;
+    onNodeDrag?: (nodeId: string, x: number, y: number) => void;
     onCreateNode?: () => void;
     className?: string;
 }
@@ -19,18 +20,26 @@ export function GraphCanvas({
     connections,
     selectedNodeId,
     onNodeSelect,
+    onNodeDrag,
     onCreateNode,
     className,
 }: GraphCanvasProps) {
     const isEmpty = nodes.length === 0;
 
+    // Deselect when clicking on canvas background
+    const handleCanvasClick = (e: React.MouseEvent) => {
+        if (e.target === e.currentTarget) {
+            onNodeSelect?.(null);
+        }
+    };
+
     return (
         <main
             className={cn(
                 "flex-1 relative bg-[#f0f6ff] overflow-hidden",
-                !isEmpty && "cursor-grab active:cursor-grabbing",
                 className
             )}
+            onClick={handleCanvasClick}
         >
             {/* Grid Background Pattern */}
             <div
@@ -54,7 +63,7 @@ export function GraphCanvas({
                 </div>
             ) : (
                 /* Graph Container */
-                <div className="absolute inset-0">
+                <div className="absolute inset-0" onClick={handleCanvasClick}>
                     {/* Connection Lines (SVG) */}
                     <svg
                         className="absolute inset-0 w-full h-full pointer-events-none overflow-visible"
@@ -73,12 +82,13 @@ export function GraphCanvas({
                             node={node}
                             selected={selectedNodeId === node.id}
                             onClick={onNodeSelect}
+                            onDrag={onNodeDrag}
                         />
                     ))}
                 </div>
             )}
 
-            {/* Floating Controls (Zoom) - Always visible */}
+            {/* Floating Controls (Zoom) */}
             <div className="absolute bottom-8 right-8 flex flex-col gap-3">
                 <div className="flex flex-col bg-white rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-slate-100 overflow-hidden">
                     <button

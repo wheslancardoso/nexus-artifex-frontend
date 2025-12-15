@@ -13,6 +13,25 @@ import {
 // Simple ID generator (will be replaced by backend IDs)
 const generateId = () => `idea-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
+// Spiral position generator for non-overlapping nodes
+function getSpiralPosition(index: number, centerX: number, centerY: number) {
+    if (index === 0) {
+        return { x: centerX, y: centerY };
+    }
+
+    // Spiral parameters
+    const angleStep = 0.8; // radians per step
+    const radiusStep = 40; // pixels per revolution
+
+    const angle = index * angleStep;
+    const radius = 120 + (angle * radiusStep) / (2 * Math.PI);
+
+    return {
+        x: centerX + Math.cos(angle) * radius,
+        y: centerY + Math.sin(angle) * radius,
+    };
+}
+
 export default function DashboardPage() {
     // Local state for graph data
     const [nodes, setNodes] = useState<NodeData[]>([]);
@@ -37,38 +56,72 @@ export default function DashboardPage() {
         setIsCreateModalOpen(false);
     }, []);
 
-    // Create new idea
+    // Create new idea with spiral positioning
     const handleCreateIdea = useCallback(
         (data: { title: string; description: string }) => {
-            // Calculate position (center of visible area, with offset for multiple nodes)
-            const offsetX = nodes.length * 50;
-            const offsetY = nodes.length * 30;
+            const position = getSpiralPosition(nodes.length, 450, 350);
 
             const newNode: NodeData = {
                 id: generateId(),
-                x: 400 + offsetX,
-                y: 300 + offsetY,
+                x: position.x,
+                y: position.y,
                 label: data.title,
-                sublabel: data.description ? "Com descrição" : undefined,
+                description: data.description || undefined,
                 icon: "lightbulb",
-                size: nodes.length === 0 ? "lg" : "md", // First node is larger
+                size: nodes.length === 0 ? "lg" : "md",
                 variant: nodes.length === 0 ? "primary" : "default",
             };
 
             setNodes((prev) => [...prev, newNode]);
-            setSelectedNode(newNode); // Auto-select the new node
+            setSelectedNode(newNode);
             handleCloseCreateModal();
         },
         [nodes.length, handleCloseCreateModal]
     );
 
+    // Handle node drag
+    const handleNodeDrag = useCallback((nodeId: string, x: number, y: number) => {
+        setNodes((prev) =>
+            prev.map((node) =>
+                node.id === nodeId ? { ...node, x, y } : node
+            )
+        );
+        // Update selected node position too
+        setSelectedNode((prev) =>
+            prev?.id === nodeId ? { ...prev, x, y } : prev
+        );
+    }, []);
+
+    // Handle node update (title, description)
+    const handleNodeUpdate = useCallback(
+        (nodeId: string, data: { label: string; description: string }) => {
+            setNodes((prev) =>
+                prev.map((node) =>
+                    node.id === nodeId
+                        ? { ...node, label: data.label, description: data.description }
+                        : node
+                )
+            );
+            // Update selected node too
+            setSelectedNode((prev) =>
+                prev?.id === nodeId
+                    ? { ...prev, label: data.label, description: data.description }
+                    : prev
+            );
+        },
+        []
+    );
+
+    // Handle node delete
+    const handleNodeDelete = useCallback((nodeId: string) => {
+        setNodes((prev) => prev.filter((node) => node.id !== nodeId));
+        setSelectedNode((prev) => (prev?.id === nodeId ? null : prev));
+    }, []);
+
     return (
         <div className="h-screen w-full overflow-hidden flex bg-[var(--color-bg-light)]">
             {/* Left Sidebar */}
-            <Sidebar
-                user={null}
-                onCreateIdea={handleOpenCreateModal}
-            />
+            <Sidebar user={null} onCreateIdea={handleOpenCreateModal} />
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col relative h-full">
@@ -131,6 +184,7 @@ export default function DashboardPage() {
                     connections={connections}
                     selectedNodeId={selectedNode?.id}
                     onNodeSelect={handleNodeSelect}
+                    onNodeDrag={handleNodeDrag}
                     onCreateNode={handleOpenCreateModal}
                     className="pt-16"
                 />
@@ -141,6 +195,8 @@ export default function DashboardPage() {
                 node={selectedNode}
                 connections={[]}
                 onClose={() => setSelectedNode(null)}
+                onUpdate={handleNodeUpdate}
+                onDelete={handleNodeDelete}
             />
 
             {/* Create Idea Modal */}

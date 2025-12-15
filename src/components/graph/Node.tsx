@@ -1,10 +1,14 @@
+"use client";
+
 import { cn } from "@/lib/utils";
+import { useState, useCallback, useRef } from "react";
 
 export interface NodeData {
     id: string;
     x: number;
     y: number;
     label: string;
+    description?: string;
     sublabel?: string;
     icon?: string;
     size?: "sm" | "md" | "lg";
@@ -15,7 +19,7 @@ interface NodeProps {
     node: NodeData;
     selected?: boolean;
     onClick?: (node: NodeData) => void;
-    onHover?: (node: NodeData | null) => void;
+    onDrag?: (nodeId: string, x: number, y: number) => void;
 }
 
 const sizeClasses = {
@@ -30,42 +34,93 @@ const iconSizeClasses = {
     lg: "text-[28px]",
 };
 
-export function Node({
-    node,
-    selected = false,
-    onClick,
-    onHover,
-}: NodeProps) {
+export function Node({ node, selected = false, onClick, onDrag }: NodeProps) {
+    const [isDragging, setIsDragging] = useState(false);
+    const dragRef = useRef<{ startX: number; startY: number; nodeX: number; nodeY: number } | null>(null);
+
     const size = node.size || "md";
     const variant = node.variant || "default";
 
     const variantStyles = {
         default:
-            "bg-white border-2 border-slate-200 shadow-lg hover:border-[var(--color-primary)]",
+            "bg-white border-2 border-slate-200 shadow-lg hover:border-[var(--color-primary)] hover:shadow-xl",
         primary:
             "bg-white border-[6px] border-[var(--color-primary)]/10 shadow-[0_8px_30px_rgba(37,140,244,0.15)] hover:border-[var(--color-primary)]/30",
         secondary:
             "bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent-cyan)] shadow-[0_8px_30px_rgba(37,140,244,0.5)] text-white border border-white/50",
     };
 
+    const handleMouseDown = useCallback(
+        (e: React.MouseEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            dragRef.current = {
+                startX: e.clientX,
+                startY: e.clientY,
+                nodeX: node.x,
+                nodeY: node.y,
+            };
+            setIsDragging(true);
+
+            const handleMouseMove = (moveEvent: MouseEvent) => {
+                if (!dragRef.current) return;
+
+                const deltaX = moveEvent.clientX - dragRef.current.startX;
+                const deltaY = moveEvent.clientY - dragRef.current.startY;
+
+                const newX = dragRef.current.nodeX + deltaX;
+                const newY = dragRef.current.nodeY + deltaY;
+
+                onDrag?.(node.id, newX, newY);
+            };
+
+            const handleMouseUp = () => {
+                setIsDragging(false);
+                dragRef.current = null;
+                document.removeEventListener("mousemove", handleMouseMove);
+                document.removeEventListener("mouseup", handleMouseUp);
+            };
+
+            document.addEventListener("mousemove", handleMouseMove);
+            document.addEventListener("mouseup", handleMouseUp);
+        },
+        [node.id, node.x, node.y, onDrag]
+    );
+
+    const handleClick = useCallback(
+        (e: React.MouseEvent) => {
+            // Only trigger click if not dragging
+            if (!isDragging) {
+                onClick?.(node);
+            }
+        },
+        [isDragging, node, onClick]
+    );
+
     return (
         <div
             className={cn(
-                "absolute -translate-x-1/2 -translate-y-1/2 group cursor-pointer transition-all duration-300",
-                selected && "z-20"
+                "absolute -translate-x-1/2 -translate-y-1/2 group transition-all",
+                selected && "z-20",
+                isDragging ? "cursor-grabbing z-30" : "cursor-grab"
             )}
-            style={{ left: node.x, top: node.y }}
-            onClick={() => onClick?.(node)}
-            onMouseEnter={() => onHover?.(node)}
-            onMouseLeave={() => onHover?.(null)}
+            style={{
+                left: node.x,
+                top: node.y,
+                transition: isDragging ? "none" : "box-shadow 0.2s, transform 0.2s",
+            }}
+            onMouseDown={handleMouseDown}
+            onClick={handleClick}
         >
             {/* Node Circle */}
             <div
                 className={cn(
-                    "rounded-full flex flex-col items-center justify-center text-center p-2 hover:scale-105 transition-all duration-300 backdrop-blur-sm",
+                    "rounded-full flex flex-col items-center justify-center text-center p-2 transition-all duration-200 backdrop-blur-sm",
                     sizeClasses[size],
                     variantStyles[variant],
-                    selected && "ring-4 ring-[var(--color-primary)]/30 scale-105"
+                    selected && "ring-4 ring-[var(--color-primary)]/40 scale-105",
+                    isDragging && "scale-110 shadow-2xl"
                 )}
             >
                 {node.icon && (
@@ -90,7 +145,7 @@ export function Node({
                 )}
                 <p
                     className={cn(
-                        "font-bold leading-tight",
+                        "font-bold leading-tight max-w-full truncate px-1",
                         size === "sm" ? "text-xs" : size === "md" ? "text-xs" : "text-sm",
                         variant === "secondary" ? "text-white" : "text-slate-800"
                     )}
@@ -109,15 +164,10 @@ export function Node({
                 )}
             </div>
 
-            {/* Hover Actions */}
-            <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
-                <button className="w-8 h-8 rounded-full bg-white shadow-lg text-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white flex items-center justify-center transition-colors">
-                    <span className="material-symbols-outlined text-[16px]">edit</span>
-                </button>
-                <button className="w-8 h-8 rounded-full bg-white shadow-lg text-slate-400 hover:text-red-500 flex items-center justify-center transition-colors">
-                    <span className="material-symbols-outlined text-[16px]">delete</span>
-                </button>
-            </div>
+            {/* Selection indicator */}
+            {selected && !isDragging && (
+                <div className="absolute inset-0 -m-2 rounded-full border-2 border-dashed border-[var(--color-primary)]/30 animate-pulse pointer-events-none" />
+            )}
         </div>
     );
 }
