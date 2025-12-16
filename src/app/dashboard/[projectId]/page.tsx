@@ -13,30 +13,7 @@ import {
     ConnectionInfo,
     edgeExists,
 } from "@/components/graph";
-import { graphService, IdeaNode, Connection, ScamperTechnique } from "@/services/graph.service";
-
-// Convert API IdeaNode to internal NodeData format
-function toNodeData(node: IdeaNode, index: number, total: number): NodeData {
-    return {
-        id: node.id,
-        x: node.positionX,
-        y: node.positionY,
-        label: node.title,
-        description: node.description,
-        icon: "lightbulb",
-        size: index === 0 && total > 0 ? "lg" : "md",
-        variant: index === 0 && total > 0 ? "primary" : "default",
-    };
-}
-
-// Convert API Connection to internal Edge format
-function toEdge(connection: Connection): Edge {
-    return {
-        id: connection.id,
-        sourceNodeId: connection.sourceNodeId,
-        targetNodeId: connection.targetNodeId,
-    };
-}
+import { graphService, IdeaNode, GraphEdge, ScamperTechnique } from "@/services/graph.service";
 
 // Spiral position generator for non-overlapping nodes
 function getSpiralPosition(index: number, centerX: number, centerY: number) {
@@ -52,6 +29,35 @@ function getSpiralPosition(index: number, centerX: number, centerY: number) {
     return {
         x: centerX + Math.cos(angle) * radius,
         y: centerY + Math.sin(angle) * radius,
+    };
+}
+
+// Convert API IdeaNode to internal NodeData format
+function toNodeData(node: IdeaNode, index: number, total: number, centerX: number = 450, centerY: number = 350): NodeData {
+    // Use stored position from visualData, or generate spiral position
+    const hasPosition = node.visualData?.positionX !== undefined && node.visualData?.positionY !== undefined;
+    const position = hasPosition
+        ? { x: node.visualData!.positionX!, y: node.visualData!.positionY! }
+        : getSpiralPosition(index, centerX, centerY);
+
+    return {
+        id: node.id,
+        x: position.x,
+        y: position.y,
+        label: node.label,
+        description: node.summary,
+        icon: "lightbulb",
+        size: index === 0 && total > 0 ? "lg" : "md",
+        variant: index === 0 && total > 0 ? "primary" : "default",
+    };
+}
+
+// Convert API GraphEdge to internal Edge format
+function toEdge(edge: GraphEdge, index: number): Edge {
+    return {
+        id: `edge-${edge.source}-${edge.target}-${index}`,
+        sourceNodeId: edge.source,
+        targetNodeId: edge.target,
     };
 }
 
@@ -98,13 +104,13 @@ export default function ProjectDashboardPage() {
             try {
                 const graphData = await graphService.getGraph(projectId);
                 // Handle potentially undefined arrays from backend
-                const nodes = graphData.nodes || [];
-                const connections = graphData.connections || [];
+                const nodesData = graphData.nodes || [];
+                const edgesData = graphData.edges || [];
 
-                const loadedNodes = nodes.map((node, i) =>
-                    toNodeData(node, i, nodes.length)
+                const loadedNodes = nodesData.map((node, i) =>
+                    toNodeData(node, i, nodesData.length)
                 );
-                const loadedEdges = connections.map(toEdge);
+                const loadedEdges = edgesData.map((edge, i) => toEdge(edge, i));
                 setNodes(loadedNodes);
                 setEdges(loadedEdges);
             } catch (error) {
@@ -193,27 +199,28 @@ export default function ProjectDashboardPage() {
                 // Position new nodes radially around the original node
                 const baseX = selectedNode.x;
                 const baseY = selectedNode.y;
-                const angleStep = (2 * Math.PI) / result.generatedNodes.length;
+                const generatedCount = result.generatedNodes?.length || 0;
+                const angleStep = generatedCount > 0 ? (2 * Math.PI) / generatedCount : 0;
 
                 // Convert and add new nodes
-                const newNodes: NodeData[] = result.generatedNodes.map((node, i) => {
+                const newNodes: NodeData[] = (result.generatedNodes || []).map((node, i) => {
                     const angle = angleStep * i - Math.PI / 2;
                     const radius = 180;
                     return {
                         id: node.id,
-                        x: baseX + Math.cos(angle) * radius,
-                        y: baseY + Math.sin(angle) * radius,
-                        label: node.title,
-                        description: node.description,
+                        x: node.visualData?.positionX ?? (baseX + Math.cos(angle) * radius),
+                        y: node.visualData?.positionY ?? (baseY + Math.sin(angle) * radius),
+                        label: node.label,
+                        description: node.summary,
                         icon: "auto_awesome",
                         size: "md" as const,
                         variant: "secondary" as const,
                     };
                 });
 
-                // Convert and add new edges
-                const newEdges: Edge[] = result.connections.map((conn) => ({
-                    id: conn.id,
+                // Convert and add new edges (from connections array with new format)
+                const newEdges: Edge[] = (result.connections || []).map((conn, i) => ({
+                    id: conn.id || `edge-evolved-${i}`,
                     sourceNodeId: conn.sourceNodeId,
                     targetNodeId: conn.targetNodeId,
                 }));
@@ -239,19 +246,22 @@ export default function ProjectDashboardPage() {
                 const position = getSpiralPosition(nodes.length, 450, 350);
 
                 const createdNode = await graphService.createNode(projectId, {
-                    title: data.title,
-                    description: data.description || undefined,
-                    positionX: position.x,
-                    positionY: position.y,
+                    label: data.title,
+                    summary: data.description || undefined,
+                    type: "USER_IDEA",
+                    visualData: {
+                        positionX: position.x,
+                        positionY: position.y,
+                    },
                 });
 
                 // Convert API response to NodeData
                 const newNode: NodeData = {
                     id: createdNode.id,
-                    x: createdNode.positionX,
-                    y: createdNode.positionY,
-                    label: createdNode.title,
-                    description: createdNode.description,
+                    x: createdNode.visualData?.positionX ?? position.x,
+                    y: createdNode.visualData?.positionY ?? position.y,
+                    label: createdNode.label,
+                    description: createdNode.summary,
                     icon: "lightbulb",
                     size: nodes.length === 0 ? "lg" : "md",
                     variant: nodes.length === 0 ? "primary" : "default",

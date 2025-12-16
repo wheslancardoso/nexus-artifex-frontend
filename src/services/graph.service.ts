@@ -6,40 +6,56 @@ import { api } from "@/lib/api";
 
 // ===== TYPES =====
 
+// Backend returns this format for nodes in graph response
 export interface IdeaNode {
     id: string;
-    title: string;
-    description?: string;
-    positionX: number;
-    positionY: number;
-    createdAt: string;
-    updatedAt: string;
+    label: string;
+    summary?: string;
+    visualData?: {
+        positionX?: number;
+        positionY?: number;
+    };
 }
 
+// Backend returns this format for edges in graph response
+export interface GraphEdge {
+    source: string;
+    target: string;
+    relationship?: string;
+}
+
+// Full graph data from GET /projects/{projectId}/graph
+export interface GraphData {
+    nodes: IdeaNode[];
+    edges: GraphEdge[];
+}
+
+// Connection with ID (from POST /connections response)
 export interface Connection {
     id: string;
     sourceNodeId: string;
     targetNodeId: string;
-    createdAt: string;
+    createdAt?: string;
 }
 
-export interface GraphData {
-    projectId: string;
-    projectName: string;
-    nodes: IdeaNode[];
-    connections: Connection[];
-}
+export type NodeType =
+    | "CORE_CONCEPT"
+    | "EVOLVED_IDEA"
+    | "USER_IDEA"
+    | "EXTERNAL_INFO"
+    | "QUESTION"
+    | "DATA_POINT"
+    | "ASSUMPTION"
+    | "CONSTRAINT";
 
 export interface CreateNodePayload {
-    title: string;
-    description?: string;
-    positionX: number;
-    positionY: number;
-}
-
-export interface UpdateNodePositionPayload {
-    positionX: number;
-    positionY: number;
+    label: string;
+    summary?: string;
+    type: NodeType;
+    visualData?: {
+        positionX: number;
+        positionY: number;
+    };
 }
 
 // ===== SERVICE =====
@@ -66,15 +82,17 @@ export const graphService = {
      * Updates the position of an existing node
      */
     async updateNodePosition(nodeId: string, positionX: number, positionY: number): Promise<IdeaNode> {
-        return api.put<IdeaNode>(`/nodes/${nodeId}`, { positionX, positionY });
+        return api.put<IdeaNode>(`/nodes/${nodeId}`, {
+            visualData: { positionX, positionY }
+        });
     },
 
     /**
      * PUT /nodes/{nodeId}
-     * Updates the content (title/description) of an existing node
+     * Updates the content (label/summary) of an existing node
      */
-    async updateNodeContent(nodeId: string, title: string, description?: string): Promise<IdeaNode> {
-        return api.put<IdeaNode>(`/nodes/${nodeId}`, { title, description });
+    async updateNodeContent(nodeId: string, label: string, summary?: string): Promise<IdeaNode> {
+        return api.put<IdeaNode>(`/nodes/${nodeId}`, { label, summary });
     },
 
     /**
