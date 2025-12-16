@@ -75,6 +75,9 @@ export default function DashboardPage() {
     const [isConnectMode, setIsConnectMode] = useState(false);
     const [connectSourceId, setConnectSourceId] = useState<string | null>(null);
 
+    // Delete state
+    const [isDeleting, setIsDeleting] = useState(false);
+
     // Load graph data on mount
     useEffect(() => {
         async function loadGraph() {
@@ -229,16 +232,37 @@ export default function DashboardPage() {
         []
     );
 
-    // Handle node delete
-    const handleNodeDelete = useCallback((nodeId: string) => {
-        setNodes((prev) => prev.filter((node) => node.id !== nodeId));
-        setEdges((prev) =>
-            prev.filter(
-                (edge) => edge.sourceNodeId !== nodeId && edge.targetNodeId !== nodeId
-            )
-        );
-        setSelectedNode((prev) => (prev?.id === nodeId ? null : prev));
-    }, []);
+    // Handle node delete with API call
+    const handleNodeDelete = useCallback(
+        async (nodeId: string) => {
+            // Confirm deletion
+            if (!window.confirm("Tem certeza que deseja excluir esta ideia?")) {
+                return;
+            }
+
+            setIsDeleting(true);
+            try {
+                await graphService.deleteNode(nodeId);
+
+                // Remove node from state
+                setNodes((prev) => prev.filter((node) => node.id !== nodeId));
+                // Remove related edges
+                setEdges((prev) =>
+                    prev.filter(
+                        (edge) => edge.sourceNodeId !== nodeId && edge.targetNodeId !== nodeId
+                    )
+                );
+                // Clear selection
+                setSelectedNode((prev) => (prev?.id === nodeId ? null : prev));
+            } catch (error) {
+                console.error("Failed to delete node:", error);
+                alert("Erro ao excluir ideia. Tente novamente.");
+            } finally {
+                setIsDeleting(false);
+            }
+        },
+        []
+    );
 
     // Handle edge delete
     const handleEdgeDelete = useCallback((edgeId: string) => {
@@ -407,6 +431,7 @@ export default function DashboardPage() {
             <NodeDetailsPanel
                 node={selectedNode}
                 nodeConnections={selectedNodeConnections}
+                isDeleting={isDeleting}
                 onClose={() => setSelectedNode(null)}
                 onUpdate={handleNodeUpdate}
                 onDelete={handleNodeDelete}

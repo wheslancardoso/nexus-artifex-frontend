@@ -28,6 +28,7 @@ export interface Connection {
 interface NodeDetailsPanelProps {
     node: NodeData | null;
     nodeConnections?: ConnectionInfo[];
+    isDeleting?: boolean;
     onClose?: () => void;
     onUpdate?: (nodeId: string, data: { label: string; description: string }) => void;
     onDelete?: (nodeId: string) => void;
@@ -38,6 +39,7 @@ interface NodeDetailsPanelProps {
 export function NodeDetailsPanel({
     node,
     nodeConnections = [],
+    isDeleting = false,
     onClose,
     onUpdate,
     onDelete,
@@ -222,10 +224,20 @@ export function NodeDetailsPanel({
                     </label>
                     <button
                         onClick={handleDelete}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300 transition-all text-sm font-medium"
+                        disabled={isDeleting}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300 transition-all text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <span className="material-symbols-outlined text-[18px]">delete</span>
-                        Excluir Ideia
+                        {isDeleting ? (
+                            <>
+                                <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                                Excluindo...
+                            </>
+                        ) : (
+                            <>
+                                <span className="material-symbols-outlined text-[18px]">delete</span>
+                                Excluir Ideia
+                            </>
+                        )}
                     </button>
                 </div>
             </div>

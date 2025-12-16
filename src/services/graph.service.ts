@@ -68,4 +68,12 @@ export const graphService = {
     async updateNodePosition(nodeId: string, positionX: number, positionY: number): Promise<IdeaNode> {
         return api.put<IdeaNode>(`/nodes/${nodeId}`, { positionX, positionY });
     },
+
+    /**
+     * DELETE /nodes/{nodeId}
+     * Deletes a node
+     */
+    async deleteNode(nodeId: string): Promise<void> {
+        return api.delete<void>(`/nodes/${nodeId}`);
+    },
 };
