@@ -107,4 +107,46 @@ export const graphService = {
     async deleteConnection(connectionId: string): Promise<void> {
         return api.delete<void>(`/connections/${connectionId}`);
     },
+
+    /**
+     * POST /nodes/{nodeId}/evolve
+     * Evolves a node using SCAMPER technique
+     */
+    async evolveNode(
+        nodeId: string,
+        technique: ScamperTechnique,
+        count: number
+    ): Promise<EvolveResult> {
+        return api.post<EvolveResult>(`/nodes/${nodeId}/evolve`, {
+            technique,
+            count,
+        });
+    },
 };
+
+// ===== SCAMPER TYPES =====
+
+export type ScamperTechnique =
+    | "SUBSTITUTE"
+    | "COMBINE"
+    | "ADAPT"
+    | "MODIFY"
+    | "PUT_TO_ANOTHER_USE"
+    | "ELIMINATE"
+    | "REVERSE";
+
+export interface EvolveResult {
+    generatedNodes: IdeaNode[];
+    connections: Connection[];
+}
+
+export const SCAMPER_TECHNIQUES: { value: ScamperTechnique; label: string; description: string }[] = [
+    { value: "SUBSTITUTE", label: "Substituir", description: "O que pode ser substituído?" },
+    { value: "COMBINE", label: "Combinar", description: "O que pode ser combinado?" },
+    { value: "ADAPT", label: "Adaptar", description: "O que pode ser adaptado?" },
+    { value: "MODIFY", label: "Modificar", description: "O que pode ser modificado ou ampliado?" },
+    { value: "PUT_TO_ANOTHER_USE", label: "Outro Uso", description: "Para que mais pode servir?" },
+    { value: "ELIMINATE", label: "Eliminar", description: "O que pode ser eliminado ou simplificado?" },
+    { value: "REVERSE", label: "Reverter", description: "O que pode ser reorganizado ou invertido?" },
+];
+

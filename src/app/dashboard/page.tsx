@@ -6,13 +6,14 @@ import {
     GraphCanvas,
     NodeDetailsPanel,
     CreateIdeaModal,
+    EvolveIdeaModal,
     NodeData,
     Edge,
     ConnectionInfo,
     generateEdgeId,
     edgeExists,
 } from "@/components/graph";
-import { graphService, IdeaNode, Connection } from "@/services/graph.service";
+import { graphService, IdeaNode, Connection, ScamperTechnique } from "@/services/graph.service";
 
 // TODO: Replace with real project ID from auth/context
 const PROJECT_ID = "default-project";
@@ -81,6 +82,11 @@ export default function DashboardPage() {
 
     // Saving state
     const [isSaving, setIsSaving] = useState(false);
+
+    // Evolve modal state
+    const [isEvolveModalOpen, setIsEvolveModalOpen] = useState(false);
+    const [evolveNodeId, setEvolveNodeId] = useState<string | null>(null);
+    const [isEvolving, setIsEvolving] = useState(false);
 
     // Load graph data on mount
     useEffect(() => {
@@ -154,6 +160,68 @@ export default function DashboardPage() {
     const handleCloseCreateModal = useCallback(() => {
         setIsCreateModalOpen(false);
     }, []);
+
+    // Open evolve modal
+    const handleOpenEvolveModal = useCallback((nodeId: string) => {
+        setEvolveNodeId(nodeId);
+        setIsEvolveModalOpen(true);
+    }, []);
+
+    // Close evolve modal
+    const handleCloseEvolveModal = useCallback(() => {
+        setIsEvolveModalOpen(false);
+        setEvolveNodeId(null);
+    }, []);
+
+    // Evolve idea via SCAMPER
+    const handleEvolveIdea = useCallback(
+        async (technique: ScamperTechnique, count: number) => {
+            if (!evolveNodeId || !selectedNode) return;
+
+            setIsEvolving(true);
+            try {
+                const result = await graphService.evolveNode(evolveNodeId, technique, count);
+
+                // Position new nodes radially around the original node
+                const baseX = selectedNode.x;
+                const baseY = selectedNode.y;
+                const angleStep = (2 * Math.PI) / result.generatedNodes.length;
+
+                // Convert and add new nodes
+                const newNodes: NodeData[] = result.generatedNodes.map((node, i) => {
+                    const angle = angleStep * i - Math.PI / 2;
+                    const radius = 180;
+                    return {
+                        id: node.id,
+                        x: baseX + Math.cos(angle) * radius,
+                        y: baseY + Math.sin(angle) * radius,
+                        label: node.title,
+                        description: node.description,
+                        icon: "auto_awesome",
+                        size: "md" as const,
+                        variant: "secondary" as const,
+                    };
+                });
+
+                // Convert and add new edges
+                const newEdges: Edge[] = result.connections.map((conn) => ({
+                    id: conn.id,
+                    sourceNodeId: conn.sourceNodeId,
+                    targetNodeId: conn.targetNodeId,
+                }));
+
+                setNodes((prev) => [...prev, ...newNodes]);
+                setEdges((prev) => [...prev, ...newEdges]);
+                handleCloseEvolveModal();
+            } catch (error) {
+                console.error("Failed to evolve idea:", error);
+                alert("Erro ao evoluir ideia. Tente novamente.");
+            } finally {
+                setIsEvolving(false);
+            }
+        },
+        [evolveNodeId, selectedNode]
+    );
 
     // Create new idea via API
     const handleCreateIdea = useCallback(
@@ -473,6 +541,7 @@ export default function DashboardPage() {
                 onUpdate={handleNodeUpdate}
                 onDelete={handleNodeDelete}
                 onDeleteEdge={handleEdgeDelete}
+                onEvolve={handleOpenEvolveModal}
             />
 
             {/* Create Idea Modal */}
@@ -481,6 +550,15 @@ export default function DashboardPage() {
                 isLoading={isCreating}
                 onClose={handleCloseCreateModal}
                 onCreate={handleCreateIdea}
+            />
+
+            {/* Evolve Idea Modal */}
+            <EvolveIdeaModal
+                isOpen={isEvolveModalOpen}
+                nodeTitle={selectedNode?.label || ""}
+                isLoading={isEvolving}
+                onClose={handleCloseEvolveModal}
+                onEvolve={handleEvolveIdea}
             />
         </div>
     );

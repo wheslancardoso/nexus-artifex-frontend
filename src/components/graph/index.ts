@@ -11,6 +11,9 @@ export type { Connection, ConnectionInfo } from "./NodeDetailsPanel";
 
 export { CreateIdeaModal } from "./CreateIdeaModal";
 
+export { EvolveIdeaModal } from "./EvolveIdeaModal";
+
 export type { Edge } from "./types";
 export { generateEdgeId, edgeExists } from "./types";
+
 

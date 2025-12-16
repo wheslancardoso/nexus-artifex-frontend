@@ -34,6 +34,7 @@ interface NodeDetailsPanelProps {
     onUpdate?: (nodeId: string, data: { label: string; description: string }) => Promise<void>;
     onDelete?: (nodeId: string) => void;
     onDeleteEdge?: (edgeId: string) => void;
+    onEvolve?: (nodeId: string) => void;
     className?: string;
 }
 
@@ -46,6 +47,7 @@ export function NodeDetailsPanel({
     onUpdate,
     onDelete,
     onDeleteEdge,
+    onEvolve,
     className,
 }: NodeDetailsPanelProps) {
     const [title, setTitle] = useState("");
@@ -215,6 +217,22 @@ export function NodeDetailsPanel({
                             ))}
                         </div>
                     )}
+                </div>
+
+                <div className="h-px bg-slate-100" />
+
+                {/* Evolve Section */}
+                <div>
+                    <label className="block text-[11px] font-bold text-slate-400 mb-3 uppercase tracking-wider">
+                        Evoluir Ideia
+                    </label>
+                    <button
+                        onClick={() => node && onEvolve?.(node.id)}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[var(--color-accent-aqua)] to-[var(--color-primary)] text-white hover:shadow-lg hover:scale-[1.02] transition-all text-sm font-medium"
+                    >
+                        <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
+                        Evoluir com SCAMPER
+                    </button>
                 </div>
 
                 <div className="h-px bg-slate-100" />
