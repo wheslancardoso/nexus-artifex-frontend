@@ -70,6 +70,14 @@ export const graphService = {
     },
 
     /**
+     * PUT /nodes/{nodeId}
+     * Updates the content (title/description) of an existing node
+     */
+    async updateNodeContent(nodeId: string, title: string, description?: string): Promise<IdeaNode> {
+        return api.put<IdeaNode>(`/nodes/${nodeId}`, { title, description });
+    },
+
+    /**
      * DELETE /nodes/{nodeId}
      * Deletes a node
      */

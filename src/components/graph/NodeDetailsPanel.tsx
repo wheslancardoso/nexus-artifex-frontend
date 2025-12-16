@@ -29,8 +29,9 @@ interface NodeDetailsPanelProps {
     node: NodeData | null;
     nodeConnections?: ConnectionInfo[];
     isDeleting?: boolean;
+    isSaving?: boolean;
     onClose?: () => void;
-    onUpdate?: (nodeId: string, data: { label: string; description: string }) => void;
+    onUpdate?: (nodeId: string, data: { label: string; description: string }) => Promise<void>;
     onDelete?: (nodeId: string) => void;
     onDeleteEdge?: (edgeId: string) => void;
     className?: string;
@@ -40,6 +41,7 @@ export function NodeDetailsPanel({
     node,
     nodeConnections = [],
     isDeleting = false,
+    isSaving = false,
     onClose,
     onUpdate,
     onDelete,
@@ -68,9 +70,9 @@ export function NodeDetailsPanel({
         }
     }, [title, description, node]);
 
-    const handleSave = () => {
-        if (node && hasChanges) {
-            onUpdate?.(node.id, { label: title.trim(), description: description.trim() });
+    const handleSave = async () => {
+        if (node && hasChanges && onUpdate) {
+            await onUpdate(node.id, { label: title.trim(), description: description.trim() });
             setHasChanges(false);
         }
     };
@@ -244,9 +246,18 @@ export function NodeDetailsPanel({
 
             {/* Footer Actions */}
             <div className="p-4 border-t border-slate-200 bg-slate-50/80 backdrop-blur-sm">
-                <Button onClick={handleSave} className="w-full" disabled={!hasChanges}>
-                    <span className="material-symbols-outlined text-[20px]">save</span>
-                    {hasChanges ? "Salvar Alterações" : "Sem Alterações"}
+                <Button onClick={handleSave} className="w-full" disabled={!hasChanges || isSaving}>
+                    {isSaving ? (
+                        <>
+                            <span className="material-symbols-outlined text-[20px] animate-spin">progress_activity</span>
+                            Salvando...
+                        </>
+                    ) : (
+                        <>
+                            <span className="material-symbols-outlined text-[20px]">save</span>
+                            {hasChanges ? "Salvar Alterações" : "Sem Alterações"}
+                        </>
+                    )}
                 </Button>
             </div>
         </aside>

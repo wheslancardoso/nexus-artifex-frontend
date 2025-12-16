@@ -79,6 +79,9 @@ export default function DashboardPage() {
     const [isDeleting, setIsDeleting] = useState(false);
     const [isDeletingEdge, setIsDeletingEdge] = useState(false);
 
+    // Saving state
+    const [isSaving, setIsSaving] = useState(false);
+
     // Load graph data on mount
     useEffect(() => {
         async function loadGraph() {
@@ -214,21 +217,30 @@ export default function DashboardPage() {
         []
     );
 
-    // Handle node update (title, description)
+    // Handle node update (title, description) with API call
     const handleNodeUpdate = useCallback(
-        (nodeId: string, data: { label: string; description: string }) => {
-            setNodes((prev) =>
-                prev.map((node) =>
-                    node.id === nodeId
-                        ? { ...node, label: data.label, description: data.description }
-                        : node
-                )
-            );
-            setSelectedNode((prev) =>
-                prev?.id === nodeId
-                    ? { ...prev, label: data.label, description: data.description }
-                    : prev
-            );
+        async (nodeId: string, data: { label: string; description: string }) => {
+            setIsSaving(true);
+            try {
+                await graphService.updateNodeContent(nodeId, data.label, data.description);
+                setNodes((prev) =>
+                    prev.map((node) =>
+                        node.id === nodeId
+                            ? { ...node, label: data.label, description: data.description }
+                            : node
+                    )
+                );
+                setSelectedNode((prev) =>
+                    prev?.id === nodeId
+                        ? { ...prev, label: data.label, description: data.description }
+                        : prev
+                );
+            } catch (error) {
+                console.error("Failed to update node:", error);
+                alert("Erro ao salvar alterações. Tente novamente.");
+            } finally {
+                setIsSaving(false);
+            }
         },
         []
     );
@@ -456,6 +468,7 @@ export default function DashboardPage() {
                 node={selectedNode}
                 nodeConnections={selectedNodeConnections}
                 isDeleting={isDeleting}
+                isSaving={isSaving}
                 onClose={() => setSelectedNode(null)}
                 onUpdate={handleNodeUpdate}
                 onDelete={handleNodeDelete}
