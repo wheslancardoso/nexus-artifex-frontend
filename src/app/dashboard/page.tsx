@@ -77,6 +77,7 @@ export default function DashboardPage() {
 
     // Delete state
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isDeletingEdge, setIsDeletingEdge] = useState(false);
 
     // Load graph data on mount
     useEffect(() => {
@@ -264,10 +265,22 @@ export default function DashboardPage() {
         []
     );
 
-    // Handle edge delete
-    const handleEdgeDelete = useCallback((edgeId: string) => {
-        setEdges((prev) => prev.filter((edge) => edge.id !== edgeId));
-    }, []);
+    // Handle edge delete with API call
+    const handleEdgeDelete = useCallback(
+        async (edgeId: string) => {
+            setIsDeletingEdge(true);
+            try {
+                await graphService.deleteConnection(edgeId);
+                setEdges((prev) => prev.filter((edge) => edge.id !== edgeId));
+            } catch (error) {
+                console.error("Failed to delete connection:", error);
+                alert("Erro ao excluir conexão. Tente novamente.");
+            } finally {
+                setIsDeletingEdge(false);
+            }
+        },
+        []
+    );
 
     // Toggle connection mode
     const handleToggleConnectMode = useCallback(() => {
@@ -287,19 +300,30 @@ export default function DashboardPage() {
         setConnectSourceId(null);
     }, []);
 
-    // Handle node click in connection mode
+    // Handle node click in connection mode - create connection via API
     const handleNodeConnectClick = useCallback(
-        (node: NodeData) => {
+        async (node: NodeData) => {
             if (!connectSourceId) {
                 setConnectSourceId(node.id);
             } else {
                 if (node.id !== connectSourceId && !edgeExists(edges, connectSourceId, node.id)) {
-                    const newEdge: Edge = {
-                        id: generateEdgeId(connectSourceId, node.id),
-                        sourceNodeId: connectSourceId,
-                        targetNodeId: node.id,
-                    };
-                    setEdges((prev) => [...prev, newEdge]);
+                    try {
+                        const createdConnection = await graphService.createConnection(
+                            PROJECT_ID,
+                            connectSourceId,
+                            node.id
+                        );
+                        // Convert API response to internal Edge format
+                        const newEdge: Edge = {
+                            id: createdConnection.id,
+                            sourceNodeId: createdConnection.sourceNodeId,
+                            targetNodeId: createdConnection.targetNodeId,
+                        };
+                        setEdges((prev) => [...prev, newEdge]);
+                    } catch (error) {
+                        console.error("Failed to create connection:", error);
+                        alert("Erro ao criar conexão. Tente novamente.");
+                    }
                 }
                 setIsConnectMode(false);
                 setConnectSourceId(null);

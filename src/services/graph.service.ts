@@ -76,4 +76,27 @@ export const graphService = {
     async deleteNode(nodeId: string): Promise<void> {
         return api.delete<void>(`/nodes/${nodeId}`);
     },
+
+    /**
+     * POST /projects/{projectId}/connections
+     * Creates a connection between two nodes
+     */
+    async createConnection(
+        projectId: string,
+        sourceNodeId: string,
+        targetNodeId: string
+    ): Promise<Connection> {
+        return api.post<Connection>(`/projects/${projectId}/connections`, {
+            sourceNodeId,
+            targetNodeId,
+        });
+    },
+
+    /**
+     * DELETE /connections/{connectionId}
+     * Deletes a connection
+     */
+    async deleteConnection(connectionId: string): Promise<void> {
+        return api.delete<void>(`/connections/${connectionId}`);
+    },
 };
