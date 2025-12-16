@@ -31,6 +31,7 @@ interface SidebarProps {
     onCreateIdea?: () => void;
     onConnect?: () => void;
     onEvolve?: () => void;
+    onOpenProjects?: () => void;
     className?: string;
 }
 
@@ -42,6 +43,7 @@ export function Sidebar({
     onCreateIdea,
     onConnect,
     onEvolve,
+    onOpenProjects,
     className,
 }: SidebarProps) {
     // Default action items
@@ -69,7 +71,6 @@ export function Sidebar({
 
     const defaultNavItems: SidebarItem[] = [
         { icon: "dashboard", label: "Painel Principal", active: true },
-        { icon: "folder_open", label: "Meus Projetos", href: "/dashboard" },
         { icon: "groups", label: "Equipe", disabled: true },
     ];
 

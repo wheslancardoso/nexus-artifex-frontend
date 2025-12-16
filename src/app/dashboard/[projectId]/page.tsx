@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
-import { Sidebar } from "@/components/layout/Sidebar";
+import { Sidebar, ProjectSwitcher } from "@/components/layout";
 import {
     GraphCanvas,
     NodeDetailsPanel,
@@ -93,6 +93,9 @@ export default function ProjectDashboardPage() {
     const [isEvolveModalOpen, setIsEvolveModalOpen] = useState(false);
     const [evolveNodeId, setEvolveNodeId] = useState<string | null>(null);
     const [isEvolving, setIsEvolving] = useState(false);
+
+    // Project Switcher state (controlled from Sidebar)
+    const [isProjectSwitcherOpen, setIsProjectSwitcherOpen] = useState(false);
 
     // Load graph data on mount
     useEffect(() => {
@@ -474,22 +477,20 @@ export default function ProjectDashboardPage() {
                 onCreateIdea={handleOpenCreateModal}
                 onConnect={nodes.length >= 2 ? handleToggleConnectMode : undefined}
                 onEvolve={selectedNode ? () => handleOpenEvolveModal(selectedNode.id) : undefined}
+                onOpenProjects={() => setIsProjectSwitcherOpen(true)}
             />
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col relative h-full">
                 {/* Top Bar */}
                 <header className="h-16 absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-6 bg-white/60 backdrop-blur-md border-b border-white/20">
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 text-slate-400 text-sm">
-                            <span>Projetos</span>
-                            <span className="material-symbols-outlined text-[16px]">
-                                chevron_right
-                            </span>
-                        </div>
-                        <h2 className="text-slate-800 font-bold text-lg tracking-tight">
-                            Novo Projeto
-                        </h2>
+                    <div className="flex items-center gap-3">
+                        <ProjectSwitcher
+                            currentProjectId={projectId}
+                            currentProjectName="Meu Projeto"
+                            isOpen={isProjectSwitcherOpen}
+                            onOpenChange={setIsProjectSwitcherOpen}
+                        />
                         <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold uppercase tracking-wide border border-slate-200">
                             Rascunho
                         </span>
