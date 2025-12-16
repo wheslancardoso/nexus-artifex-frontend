@@ -75,15 +75,22 @@ class ApiClient {
     }
 
     async put<T>(path: string, body: unknown): Promise<T> {
-        const response = await fetch(`${this.baseUrl}${path}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(body),
-        });
+        try {
+            const response = await fetch(`${this.baseUrl}${path}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(body),
+            });
 
-        return this.handleResponse<T>(response);
+            return this.handleResponse<T>(response);
+        } catch (error) {
+            if (error instanceof TypeError && error.message.includes("fetch")) {
+                throw { message: "Backend não disponível para atualização.", status: 0 };
+            }
+            throw error;
+        }
     }
 
     async delete<T>(path: string): Promise<T> {

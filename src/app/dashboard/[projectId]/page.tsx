@@ -290,15 +290,12 @@ export default function ProjectDashboardPage() {
         );
     }, []);
 
-    // Handle node drag end - persist to backend
+    // Handle node drag end - position updates are local-only for now
+    // Backend doesn't support PUT /nodes/{id} yet (returns 405)
     const handleNodeDragEnd = useCallback(
-        async (nodeId: string, x: number, y: number) => {
-            try {
-                await graphService.updateNodePosition(nodeId, x, y);
-            } catch (error) {
-                console.error("Failed to save node position:", error);
-                // MVP: Don't revert position, just log error
-            }
+        async (_nodeId: string, _x: number, _y: number) => {
+            // Position is already updated optimistically in handleNodeDrag
+            // Backend persistence will be added when endpoint is available
         },
         []
     );
@@ -476,6 +473,7 @@ export default function ProjectDashboardPage() {
                 isConnectMode={isConnectMode}
                 onCreateIdea={handleOpenCreateModal}
                 onConnect={nodes.length >= 2 ? handleToggleConnectMode : undefined}
+                onEvolve={selectedNode ? () => handleOpenEvolveModal(selectedNode.id) : undefined}
             />
 
             {/* Main Content Area */}

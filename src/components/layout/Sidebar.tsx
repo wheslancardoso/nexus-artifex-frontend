@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { Logo } from "./Logo";
+import Link from "next/link";
 
 interface SidebarItem {
     icon: string;
@@ -62,13 +63,13 @@ export function Sidebar({
             icon: "psychology",
             label: "Evoluir (SCAMPER)",
             onClick: onEvolve,
-            disabled: true, // Requires backend
+            disabled: !onEvolve,
         },
     ];
 
     const defaultNavItems: SidebarItem[] = [
         { icon: "dashboard", label: "Painel Principal", active: true },
-        { icon: "folder_open", label: "Meus Projetos", disabled: true },
+        { icon: "folder_open", label: "Meus Projetos", href: "/dashboard" },
         { icon: "groups", label: "Equipe", disabled: true },
     ];
 
@@ -142,36 +143,60 @@ export function Sidebar({
                         Navegação
                     </h2>
                     <div className="space-y-1">
-                        {navs.map((item) => (
-                            <button
-                                key={item.label}
-                                disabled={item.disabled}
-                                className={cn(
-                                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-left",
-                                    item.active
-                                        ? "bg-gradient-to-r from-[var(--color-primary)]/10 to-transparent text-[var(--color-primary)] border-l-4 border-[var(--color-primary)] font-semibold shadow-sm"
-                                        : item.disabled
-                                            ? "text-slate-400 cursor-not-allowed opacity-60 border border-transparent"
-                                            : "hover:bg-slate-100 text-slate-600 border border-transparent"
-                                )}
-                                title={item.disabled ? "Disponível após integração com backend" : undefined}
-                            >
-                                <span
-                                    className={cn(
-                                        "material-symbols-outlined",
-                                        item.active && "fill-1"
-                                    )}
-                                >
-                                    {item.icon}
-                                </span>
-                                {item.label}
-                                {item.disabled && !item.active && (
-                                    <span className="material-symbols-outlined text-[14px] text-slate-300 ml-auto">
-                                        lock
+                        {navs.map((item) => {
+                            const className = cn(
+                                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-left",
+                                item.active
+                                    ? "bg-gradient-to-r from-[var(--color-primary)]/10 to-transparent text-[var(--color-primary)] border-l-4 border-[var(--color-primary)] font-semibold shadow-sm"
+                                    : item.disabled
+                                        ? "text-slate-400 cursor-not-allowed opacity-60 border border-transparent"
+                                        : "hover:bg-slate-100 text-slate-600 border border-transparent"
+                            );
+
+                            const content = (
+                                <>
+                                    <span
+                                        className={cn(
+                                            "material-symbols-outlined",
+                                            item.active && "fill-1"
+                                        )}
+                                    >
+                                        {item.icon}
                                     </span>
-                                )}
-                            </button>
-                        ))}
+                                    {item.label}
+                                    {item.disabled && !item.active && (
+                                        <span className="material-symbols-outlined text-[14px] text-slate-300 ml-auto">
+                                            lock
+                                        </span>
+                                    )}
+                                </>
+                            );
+
+                            // Use Link for items with href that aren't disabled
+                            if (item.href && !item.disabled) {
+                                return (
+                                    <Link
+                                        key={item.label}
+                                        href={item.href}
+                                        className={className}
+                                    >
+                                        {content}
+                                    </Link>
+                                );
+                            }
+
+                            return (
+                                <button
+                                    key={item.label}
+                                    disabled={item.disabled}
+                                    onClick={item.onClick}
+                                    className={className}
+                                    title={item.disabled ? "Disponível após integração com backend" : undefined}
+                                >
+                                    {content}
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
             </div>

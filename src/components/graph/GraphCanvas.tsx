@@ -5,7 +5,7 @@ import { Node, NodeData } from "./Node";
 import { NodeConnection, ConnectionGradientDef, ConnectionData } from "./NodeConnection";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Edge } from "./types";
-import { useMemo } from "react";
+import { useMemo, useState, useCallback } from "react";
 
 interface GraphCanvasProps {
     nodes: NodeData[];
@@ -37,6 +37,24 @@ export function GraphCanvas({
     className,
 }: GraphCanvasProps) {
     const isEmpty = nodes.length === 0;
+
+    // Zoom state
+    const [zoom, setZoom] = useState(1);
+    const MIN_ZOOM = 0.25;
+    const MAX_ZOOM = 2;
+    const ZOOM_STEP = 0.25;
+
+    const handleZoomIn = useCallback(() => {
+        setZoom((prev) => Math.min(prev + ZOOM_STEP, MAX_ZOOM));
+    }, []);
+
+    const handleZoomOut = useCallback(() => {
+        setZoom((prev) => Math.max(prev - ZOOM_STEP, MIN_ZOOM));
+    }, []);
+
+    const handleResetZoom = useCallback(() => {
+        setZoom(1);
+    }, []);
 
     // Convert edges to connection data with coordinates
     const connections: ConnectionData[] = useMemo(() => {
@@ -128,7 +146,11 @@ export function GraphCanvas({
                 </div>
             ) : (
                 /* Graph Container */
-                <div className="absolute inset-0" onClick={handleCanvasClick}>
+                <div
+                    className="absolute inset-0 origin-center transition-transform duration-200"
+                    style={{ transform: `scale(${zoom})` }}
+                    onClick={handleCanvasClick}
+                >
                     {/* Connection Lines (SVG) */}
                     <svg
                         className="absolute inset-0 w-full h-full pointer-events-none overflow-visible"
@@ -157,27 +179,30 @@ export function GraphCanvas({
             )}
 
             {/* Floating Controls (Zoom) */}
-            <div className="absolute bottom-8 right-8 flex flex-col gap-3">
+            <div className="absolute bottom-8 right-8 flex flex-col gap-3 z-20">
                 <div className="flex flex-col bg-white rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-slate-100 overflow-hidden">
                     <button
+                        onClick={handleZoomIn}
                         className="w-10 h-10 flex items-center justify-center text-slate-600 hover:bg-slate-50 hover:text-[var(--color-primary)] transition-colors border-b border-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Zoom In"
-                        disabled={isEmpty}
+                        title={`Zoom In (${Math.round(zoom * 100)}%)`}
+                        disabled={isEmpty || zoom >= MAX_ZOOM}
                     >
                         <span className="material-symbols-outlined">add</span>
                     </button>
                     <button
+                        onClick={handleZoomOut}
                         className="w-10 h-10 flex items-center justify-center text-slate-600 hover:bg-slate-50 hover:text-[var(--color-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Zoom Out"
-                        disabled={isEmpty}
+                        title={`Zoom Out (${Math.round(zoom * 100)}%)`}
+                        disabled={isEmpty || zoom <= MIN_ZOOM}
                     >
                         <span className="material-symbols-outlined">remove</span>
                     </button>
                 </div>
                 <button
+                    onClick={handleResetZoom}
                     className="w-10 h-10 rounded-xl bg-white border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-600 hover:text-[var(--color-primary)] hover:border-[var(--color-primary)]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Reset View"
-                    disabled={isEmpty}
+                    title="Reset View (100%)"
+                    disabled={isEmpty || zoom === 1}
                 >
                     <span className="material-symbols-outlined">center_focus_strong</span>
                 </button>
