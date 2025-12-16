@@ -14,6 +14,7 @@ import {
     edgeExists,
 } from "@/components/graph";
 import { graphService, IdeaNode, GraphEdge, ScamperTechnique } from "@/services/graph.service";
+import { projectService } from "@/services/project.service";
 
 // Spiral position generator for non-overlapping nodes
 function getSpiralPosition(index: number, centerX: number, centerY: number) {
@@ -97,15 +98,31 @@ export default function ProjectDashboardPage() {
     // Project Switcher state (controlled from Sidebar)
     const [isProjectSwitcherOpen, setIsProjectSwitcherOpen] = useState(false);
 
-    // Load graph data on mount
+    // Project name state
+    const [projectName, setProjectName] = useState<string>("Carregando...");
+
+    // Load project and graph data on mount
     useEffect(() => {
-        async function loadGraph() {
+        async function loadProjectData() {
             if (!projectId) return;
 
             setIsLoadingGraph(true);
             setLoadError(null);
             try {
-                const graphData = await graphService.getGraph(projectId);
+                // Load projects list and graph data in parallel
+                const [projectsData, graphData] = await Promise.all([
+                    projectService.getProjects(),
+                    graphService.getGraph(projectId),
+                ]);
+
+                // Find current project name
+                const currentProject = projectsData.find(p => p.id === projectId);
+                if (currentProject) {
+                    setProjectName(currentProject.name);
+                } else {
+                    setProjectName("Projeto");
+                }
+
                 // Handle potentially undefined arrays from backend
                 const nodesData = graphData.nodes || [];
                 const edgesData = graphData.edges || [];
@@ -117,7 +134,7 @@ export default function ProjectDashboardPage() {
                 setNodes(loadedNodes);
                 setEdges(loadedEdges);
             } catch (error) {
-                console.error("Failed to load graph:", error);
+                console.error("Failed to load project:", error);
                 const errorMessage = (error as { message?: string })?.message
                     || "Erro ao carregar projeto. Tente novamente.";
                 setLoadError(errorMessage);
@@ -125,7 +142,7 @@ export default function ProjectDashboardPage() {
                 setIsLoadingGraph(false);
             }
         }
-        loadGraph();
+        loadProjectData();
     }, [projectId]);
 
     // Calculate connections for selected node
@@ -487,7 +504,7 @@ export default function ProjectDashboardPage() {
                     <div className="flex items-center gap-3">
                         <ProjectSwitcher
                             currentProjectId={projectId}
-                            currentProjectName="Meu Projeto"
+                            currentProjectName={projectName}
                             isOpen={isProjectSwitcherOpen}
                             onOpenChange={setIsProjectSwitcherOpen}
                         />

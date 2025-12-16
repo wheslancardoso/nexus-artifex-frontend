@@ -29,6 +29,14 @@ export const projectService = {
     },
 
     /**
+     * GET /projects/{projectId}
+     * Gets a single project by ID
+     */
+    async getProject(projectId: string): Promise<Project> {
+        return api.get<Project>(`/projects/${projectId}`);
+    },
+
+    /**
      * POST /projects
      * Creates a new project
      */
